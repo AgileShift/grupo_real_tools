@@ -13,9 +13,9 @@ app_license = "mit"
 # Each item in the list will be shown as an app in the apps page
 # add_to_apps_screen = [
 # 	{
-# 		"name": "grupo_real_tools",
+# 		"name": app_name,
 # 		"logo": "/assets/grupo_real_tools/logo.png",
-# 		"title": "Grupo Real Tools",
+# 		"title": app_title,
 # 		"route": "/grupo_real_tools",
 # 		"has_permission": "grupo_real_tools.api.permission.has_app_permission"
 # 	}
@@ -24,18 +24,18 @@ app_license = "mit"
 # Includes in <head>
 # ------------------
 
-# include js, css files in header of desk.html
+# include JS, CSS files in header of desk.html
 # app_include_css = "/assets/grupo_real_tools/css/grupo_real_tools.css"
 # app_include_js = "/assets/grupo_real_tools/js/grupo_real_tools.js"
 
-# include js, css files in header of web template
+# include JS, CSS files in header of web template
 # web_include_css = "/assets/grupo_real_tools/css/grupo_real_tools.css"
 # web_include_js = "/assets/grupo_real_tools/js/grupo_real_tools.js"
 
 # include custom scss in every website theme (without file extension ".scss")
 # website_theme_scss = "grupo_real_tools/public/scss/website"
 
-# include js, css files in header of web form
+# include JS, CSS files in header of web form
 # webform_include_js = {"doctype": "public/js/doctype.js"}
 # webform_include_css = {"doctype": "public/css/doctype.css"}
 
@@ -132,6 +132,10 @@ app_license = "mit"
 # ---------------
 # Hook on document methods and events
 
+# standard_queries = {
+# 	"Doctype": "grupo_real_tools.module.doctype.doctype_name.file.standard_queries",
+# }
+
 # doc_events = {
 # 	"*": {
 # 		"on_update": "method",
@@ -165,6 +169,14 @@ app_license = "mit"
 # -------
 
 # before_tests = "grupo_real_tools.install.before_tests"
+
+# DocType Class
+# ---------------
+# Override standard doctype classes
+
+# override_doctype_class = {
+#   "Doctype": "grupo_real_tools.overrides.CustomToDo"
+# }
 
 # Extend DocType Class
 # ------------------------------
@@ -239,7 +251,7 @@ app_license = "mit"
 # ]
 
 # Automatically update python controller files with type annotations for this app.
-# export_python_type_annotations = True
+export_python_type_annotations = True
 
 # default_log_clearing_doctypes = {
 # 	"Logging DocType Name": 30  # days to retain logs
@@ -248,5 +260,7 @@ app_license = "mit"
 # Translation
 # ------------
 # List of apps whose translatable strings should be excluded from this app's translations.
-# ignore_translatable_strings_from = []
+ignore_translatable_strings_from = ['frappe', 'erpnext', 'hrms']
 
+# Extend Bootinfo
+# extend_bootinfo = "grupo_real_tools.boot.boot_session"
