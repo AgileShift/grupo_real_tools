@@ -40,7 +40,7 @@ app_license = "mit"
 # webform_include_css = {"doctype": "public/css/doctype.css"}
 
 # include js in page
-# page_js = {"page" : "public/js/file.js"}
+# page_js = {"page": "public/js/file.js"}
 
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}
@@ -63,6 +63,9 @@ app_license = "mit"
 # role_home_page = {
 # 	"Role": "home_page"
 # }
+
+# Website user home page (by function)
+# get_website_user_home_page = "grupo_real_tools.utils.get_home_page"
 
 # Generators
 # ----------
@@ -253,14 +256,23 @@ app_license = "mit"
 # Automatically update python controller files with type annotations for this app.
 export_python_type_annotations = True
 
+# Require all whitelisted methods to have type annotations
+require_type_annotated_api_methods = True
+
 # default_log_clearing_doctypes = {
-# 	"Logging DocType Name": 30  # days to retain logs
+# 	"Logging DocType Name": 30 # days to retain logs
 # }
 
 # Translation
 # ------------
 # List of apps whose translatable strings should be excluded from this app's translations.
-ignore_translatable_strings_from = ['frappe', 'erpnext', 'hrms']
+ignore_translatable_strings_from = ["frappe", "erpnext", "hrms"]
 
 # Extend Bootinfo
 # extend_bootinfo = "grupo_real_tools.boot.boot_session"
+
+# Doctypes for Global Search
+# global_search_doctypes = {}
+
+# Fixtures
+# fixtures = []
