@@ -1,0 +1,197 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "hash",
+ "creation": "2026-02-26 12:57:05.899402",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_yhwp",
+  "amended_from",
+  "company",
+  "payment_settlement_template",
+  "column_break_ycpr",
+  "posting_date",
+  "column_break_cycv",
+  "from_date",
+  "to_date",
+  "section_break_dguq",
+  "mode_of_payment",
+  "clearing_account",
+  "column_break_umoy",
+  "bank_account",
+  "settlement_account",
+  "section_break_ltoe",
+  "components"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_yhwp",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Payment Settlement Entry",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "column_break_ycpr",
+   "fieldtype": "Column Break"
+  },
+  {
+   "bold": 1,
+   "fieldname": "payment_settlement_template",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Template",
+   "link_filters": "[[\"Payment Settlement Template\",\"company\",\"=\",\"eval: doc.company\"]]",
+   "options": "Payment Settlement Template",
+   "reqd": 1
+  },
+  {
+   "bold": 1,
+   "default": "Today",
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Posting Date",
+   "reqd": 1
+  },
+  {
+   "bold": 1,
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Company",
+   "link_filters": "[[\"Company\",\"is_group\",\"=\",0]]",
+   "options": "Company",
+   "reqd": 1,
+   "set_only_once": 1
+  },
+  {
+   "bold": 1,
+   "fieldname": "from_date",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "From Date",
+   "reqd": 1
+  },
+  {
+   "bold": 1,
+   "fieldname": "to_date",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "To Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_cycv",
+   "fieldtype": "Column Break"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_dguq",
+   "fieldtype": "Section Break",
+   "label": "Template Settings"
+  },
+  {
+   "bold": 1,
+   "fetch_from": "payment_settlement_template.mode_of_payment",
+   "fieldname": "mode_of_payment",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Mode of Payment",
+   "options": "Mode of Payment",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "bold": 1,
+   "fetch_from": "payment_settlement_template.clearing_account",
+   "fieldname": "clearing_account",
+   "fieldtype": "Link",
+   "label": "Clearing Account",
+   "options": "Account",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "bold": 1,
+   "fetch_from": "payment_settlement_template.bank_account",
+   "fieldname": "bank_account",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Bank Account",
+   "options": "Bank Account",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "bold": 1,
+   "fetch_from": "payment_settlement_template.settlement_account",
+   "fieldname": "settlement_account",
+   "fieldtype": "Link",
+   "label": "Settlement Account",
+   "options": "Account",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_umoy",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_ltoe",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "components",
+   "fieldtype": "Table",
+   "label": "Payment Settlement Entry Components",
+   "options": "Payment Settlement Entry Component",
+   "reqd": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-04-20 19:05:11.528333",
+ "modified_by": "Administrator",
+ "module": "Payment Settlement",
+ "name": "Payment Settlement Entry",
+ "naming_rule": "Random",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "track_seen": 1
+}
