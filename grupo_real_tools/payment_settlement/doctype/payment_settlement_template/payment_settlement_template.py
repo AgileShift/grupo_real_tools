@@ -10,15 +10,14 @@ class PaymentSettlementTemplate(Document):
 
 	if TYPE_CHECKING:
 		from frappe.types import DF
+		from grupo_real_tools.payment_settlement.doctype.payment_settlement_template_account.payment_settlement_template_account import PaymentSettlementTemplateAccount
 		from grupo_real_tools.payment_settlement.doctype.payment_settlement_template_component.payment_settlement_template_component import PaymentSettlementTemplateComponent
 
-		bank_account: DF.Link | None
-		clearing_account: DF.Link | None
+		accounts: DF.Table[PaymentSettlementTemplateAccount]
 		company: DF.Link
 		components: DF.Table[PaymentSettlementTemplateComponent]
-		mode_of_payment: DF.Link
-		settlement_account: DF.Link
 	# end: auto-generated types
 
 	def before_validate(self):
-		self.clearing_account = get_bank_cash_account(self.mode_of_payment, self.company).get('account')
+		for account in self.accounts:
+			account.clearing_account = get_bank_cash_account(account.mode_of_payment, self.company).get('account')

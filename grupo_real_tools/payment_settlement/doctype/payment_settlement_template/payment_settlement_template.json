@@ -1,5 +1,6 @@
 {
  "actions": [],
+ "allow_bulk_edit": 1,
  "allow_copy": 1,
  "allow_rename": 1,
  "autoname": "prompt",
@@ -11,27 +12,12 @@
   "column_break_nekt",
   "company",
   "column_break_uplp",
-  "section_break_geve",
-  "mode_of_payment",
-  "clearing_account",
-  "column_break_lsrj",
-  "bank_account",
-  "settlement_account",
+  "section_break_puwm",
+  "accounts",
   "section_break_kfxk",
   "components"
  ],
  "fields": [
-  {
-   "bold": 1,
-   "fieldname": "mode_of_payment",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Mode of Payment",
-   "link_filters": "[[\"Mode of Payment\",\"enabled\",\"=\",1],[\"Mode of Payment\",\"type\",\"in\",[\"Bank\",\"Cash\"]]]",
-   "options": "Mode of Payment",
-   "reqd": 1
-  },
   {
    "bold": 1,
    "fieldname": "company",
@@ -45,56 +31,12 @@
    "set_only_once": 1
   },
   {
-   "bold": 1,
-   "fieldname": "bank_account",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Bank Account",
-   "link_filters": "[[\"Bank Account\",\"disabled\",\"=\",0],[\"Bank Account\",\"is_company_account\",\"=\",1],[\"Bank Account\",\"company\",\"=\",\"eval:doc.company\"]]",
-   "mandatory_depends_on": "eval: !doc.settlement_account",
-   "options": "Bank Account"
-  },
-  {
-   "fieldname": "section_break_geve",
-   "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "column_break_lsrj",
-   "fieldtype": "Column Break"
-  },
-  {
    "fieldname": "column_break_nekt",
    "fieldtype": "Column Break"
   },
   {
    "fieldname": "column_break_uplp",
    "fieldtype": "Column Break"
-  },
-  {
-   "bold": 1,
-   "fieldname": "clearing_account",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Clearing Account",
-   "options": "Account",
-   "read_only": 1,
-   "unique": 1
-  },
-  {
-   "bold": 1,
-   "fetch_from": "bank_account.account",
-   "fieldname": "settlement_account",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Settlement Account",
-   "link_filters": "[[\"Account\",\"disabled\",\"=\",0],[\"Account\",\"is_group\",\"=\",0],[\"Account\",\"account_type\",\"in\",[\"Bank\",\"Cash\", \"Temporary\"]],[\"Account\",\"company\",\"=\",\"eval:doc.company\"]]",
-   "options": "Account",
-   "read_only": 1,
-   "read_only_depends_on": "eval: doc.bank_account",
-   "reqd": 1
   },
   {
    "fieldname": "section_break_kfxk",
@@ -105,6 +47,17 @@
    "fieldtype": "Table",
    "label": "Payment Settlement Template Component",
    "options": "Payment Settlement Template Component",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_puwm",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "accounts",
+   "fieldtype": "Table",
+   "label": "Payment Settlement Template Account",
+   "options": "Payment Settlement Template Account",
    "reqd": 1
   }
  ],
@@ -117,7 +70,7 @@
    "link_fieldname": "payment_settlement_template"
   }
  ],
- "modified": "2026-03-08 13:25:05.858542",
+ "modified": "2026-08-12 10:24:12.795978",
  "modified_by": "Administrator",
  "module": "Payment Settlement",
  "name": "Payment Settlement Template",

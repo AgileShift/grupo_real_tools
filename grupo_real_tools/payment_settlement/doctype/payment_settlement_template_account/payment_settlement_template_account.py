@@ -1,7 +1,7 @@
 from frappe.model.document import Document
 
 
-class PaymentSettlementTemplateComponent(Document):
+class PaymentSettlementTemplateAccount(Document):
 	# begin: auto-generated types
 	# This code is auto-generated. Do not modify anything in this block.
 
@@ -10,13 +10,13 @@ class PaymentSettlementTemplateComponent(Document):
 	if TYPE_CHECKING:
 		from frappe.types import DF
 
-		account: DF.Link
-		account_currency: DF.Link | None
-		calculation_method: DF.Literal["", "Percentage", "Fixed Amount", "Manual"]
+		bank_account: DF.Link | None
+		clearing_account: DF.Link | None
+		mode_of_payment: DF.Link
 		parent: DF.Data
 		parentfield: DF.Data
 		parenttype: DF.Data
-		rate: DF.Float
+		settlement_account: DF.Link
 	# end: auto-generated types
 
 	pass
