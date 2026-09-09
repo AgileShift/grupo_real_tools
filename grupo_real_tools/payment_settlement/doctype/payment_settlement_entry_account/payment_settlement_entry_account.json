@@ -6,23 +6,33 @@
  "field_order": [
   "mode_of_payment",
   "clearing_account",
+  "clearing_account_currency",
   "column_break_owes",
   "bank_account",
-  "settlement_account"
+  "settlement_account",
+  "settlement_account_currency",
+  "section_break_mcbw",
+  "reference_count",
+  "column_break_xiwg",
+  "clearing_amount",
+  "column_break_vgfr",
+  "clearing_base_amount"
  ],
  "fields": [
   {
-   "bold": 1,
+   "columns": 2,
    "fieldname": "mode_of_payment",
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Mode of Payment",
+   "link_filters": "[[\"Mode of Payment\",\"enabled\",\"=\",1],[\"Mode of Payment\",\"type\",\"in\",[\"Bank\",\"Cash\"]]]",
    "options": "Mode of Payment",
    "read_only": 1,
    "reqd": 1
   },
   {
    "bold": 1,
+   "columns": 3,
    "fieldname": "clearing_account",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -36,31 +46,100 @@
    "fieldtype": "Column Break"
   },
   {
-   "bold": 1,
+   "columns": 2,
    "fieldname": "bank_account",
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Bank Account",
+   "link_filters": "[[\"Bank Account\",\"disabled\",\"=\",0],[\"Bank Account\",\"is_company_account\",\"=\",1],[\"Bank Account\",\"company\",\"=\",\"eval:parent.company\"]]",
    "mandatory_depends_on": "eval: !doc.settlement_account",
    "options": "Bank Account",
    "read_only": 1
   },
   {
    "bold": 1,
+   "columns": 3,
    "fieldname": "settlement_account",
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Settlement Account",
+   "link_filters": "[[\"Account\",\"disabled\",\"=\",0],[\"Account\",\"is_group\",\"=\",0],[\"Account\",\"account_type\",\"in\",[\"Bank\",\"Cash\",\"Temporary\"]],[\"Account\",\"company\",\"=\",\"eval:parent.company\"]]",
    "options": "Account",
    "read_only": 1,
    "reqd": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "clearing_account_currency",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Clearing Account Currency",
+   "link_filters": "[[\"Currency\",\"enabled\",\"=\",1]]",
+   "options": "Currency",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "settlement_account_currency",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Settlement Account Currency",
+   "link_filters": "[[\"Currency\",\"enabled\",\"=\",1]]",
+   "options": "Currency",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "bold": 1,
+   "columns": 1,
+   "fieldname": "reference_count",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "References",
+   "non_negative": 1,
+   "read_only": 1
+  },
+  {
+   "bold": 1,
+   "columns": 1,
+   "fieldname": "clearing_amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Clearing Amount",
+   "non_negative": 1,
+   "options": "clearing_account_currency",
+   "read_only": 1
+  },
+  {
+   "bold": 1,
+   "columns": 1,
+   "fieldname": "clearing_base_amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Clearing Base Amount",
+   "non_negative": 1,
+   "options": "Company:company:default_currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_mcbw",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_xiwg",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_vgfr",
+   "fieldtype": "Column Break"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-08-12 11:57:52.713069",
+ "modified": "2026-09-09 13:13:27.995503",
  "modified_by": "Administrator",
  "module": "Payment Settlement",
  "name": "Payment Settlement Entry Account",
