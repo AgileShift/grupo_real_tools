@@ -11,12 +11,14 @@ class PaymentSettlementTemplateAccount(Document):
 		from frappe.types import DF
 
 		bank_account: DF.Link | None
-		clearing_account: DF.Link | None
+		clearing_account: DF.Link
+		clearing_account_currency: DF.Link
 		mode_of_payment: DF.Link
 		parent: DF.Data
 		parentfield: DF.Data
 		parenttype: DF.Data
 		settlement_account: DF.Link
+		settlement_account_currency: DF.Link
 	# end: auto-generated types
 
 	pass

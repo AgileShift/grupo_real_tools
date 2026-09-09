@@ -8,35 +8,43 @@
  "field_order": [
   "mode_of_payment",
   "clearing_account",
+  "clearing_account_currency",
   "column_break_aobs",
   "bank_account",
-  "settlement_account"
+  "settlement_account",
+  "settlement_account_currency"
  ],
  "fields": [
   {
    "bold": 1,
+   "columns": 2,
    "fieldname": "mode_of_payment",
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Mode of Payment",
    "link_filters": "[[\"Mode of Payment\",\"enabled\",\"=\",1],[\"Mode of Payment\",\"type\",\"in\",[\"Bank\",\"Cash\"]]]",
    "options": "Mode of Payment",
-   "reqd": 1
+   "reqd": 1,
+   "sticky": 1
   },
   {
    "bold": 1,
+   "columns": 3,
    "fieldname": "clearing_account",
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Clearing Account",
+   "link_filters": "[[\"Account\",\"disabled\",\"=\",0],[\"Account\",\"is_group\",\"=\",0],[\"Account\",\"company\",\"=\",\"eval:parent.company\"]]",
    "options": "Account",
-   "read_only": 1
+   "read_only": 1,
+   "reqd": 1
   },
   {
    "fieldname": "column_break_aobs",
    "fieldtype": "Column Break"
   },
   {
+   "columns": 2,
    "fieldname": "bank_account",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -46,6 +54,7 @@
   },
   {
    "bold": 1,
+   "columns": 3,
    "fetch_from": "bank_account.account",
    "fieldname": "settlement_account",
    "fieldtype": "Link",
@@ -56,13 +65,39 @@
    "read_only": 1,
    "read_only_depends_on": "eval: doc.bank_account",
    "reqd": 1
+  },
+  {
+   "bold": 1,
+   "columns": 1,
+   "fetch_from": "clearing_account.account_currency",
+   "fieldname": "clearing_account_currency",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Clearing Account Currency",
+   "link_filters": "[[\"Currency\",\"enabled\",\"=\",1]]",
+   "options": "Currency",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "bold": 1,
+   "columns": 1,
+   "fetch_from": "settlement_account.account_currency",
+   "fieldname": "settlement_account_currency",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Settlement Account Currency",
+   "link_filters": "[[\"Currency\",\"enabled\",\"=\",1]]",
+   "options": "Currency",
+   "read_only": 1,
+   "reqd": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-08-12 11:41:06.755675",
+ "modified": "2026-09-09 00:02:22.133975",
  "modified_by": "Administrator",
  "module": "Payment Settlement",
  "name": "Payment Settlement Template Account",
