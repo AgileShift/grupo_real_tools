@@ -12,11 +12,16 @@ class PaymentSettlementEntryAccount(Document):
 
 		bank_account: DF.Link | None
 		clearing_account: DF.Link
+		clearing_account_currency: DF.Link
+		clearing_amount: DF.Currency
+		clearing_base_amount: DF.Currency
 		mode_of_payment: DF.Link
 		parent: DF.Data
 		parentfield: DF.Data
 		parenttype: DF.Data
+		reference_count: DF.Int
 		settlement_account: DF.Link
+		settlement_account_currency: DF.Link
 	# end: auto-generated types
 
 	pass
