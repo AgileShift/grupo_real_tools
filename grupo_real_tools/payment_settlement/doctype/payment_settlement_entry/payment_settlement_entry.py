@@ -1,7 +1,7 @@
 import frappe
-from frappe import _
 from frappe.model.document import Document
-from frappe.utils import flt, getdate
+from frappe.query_builder.custom import ConstantColumn
+from frappe.utils import getdate
 
 
 class PaymentSettlementEntry(Document):
@@ -12,146 +12,151 @@ class PaymentSettlementEntry(Document):
 
 	if TYPE_CHECKING:
 		from frappe.types import DF
+		from grupo_real_tools.payment_settlement.doctype.payment_settlement_entry_account.payment_settlement_entry_account import PaymentSettlementEntryAccount
 		from grupo_real_tools.payment_settlement.doctype.payment_settlement_entry_component.payment_settlement_entry_component import PaymentSettlementEntryComponent
+		from grupo_real_tools.payment_settlement.doctype.payment_settlement_entry_reference.payment_settlement_entry_reference import PaymentSettlementEntryReference
 
+		accounts: DF.Table[PaymentSettlementEntryAccount]
 		amended_from: DF.Link | None
-		bank_account: DF.Link
-		clearing_account: DF.Link
 		company: DF.Link
 		components: DF.Table[PaymentSettlementEntryComponent]
 		from_date: DF.Datetime
-		mode_of_payment: DF.Link
-		payment_settlement_template: DF.Link
 		posting_date: DF.Date
-		settlement_account: DF.Link
+		references: DF.Table[PaymentSettlementEntryReference]
+		template: DF.Link
 		to_date: DF.Datetime
+		total_credit: DF.Currency
+		total_debit: DF.Currency
 	# end: auto-generated types
 
 	def validate(self):
-		self._validate_date_range()
+		self._set_accounts_clearing_totals()
 
-	def _validate_date_range(self):
-		if self.from_date and self.to_date and getdate(self.from_date) > getdate(self.to_date):
-			frappe.throw(_('From Date cannot be later than To Date.'))
+	@frappe.whitelist(allow_guest=False)
+	def fetch_template_data(self):
+		""" Copy Template Fields """
+		self.set('accounts', [])
+		self.set('components', [])
 
-	@frappe.whitelist()
-	def fetch_payment_sources(self):
-		self._validate_fetch_filters()
+		if not self.template:
+			return
 
-		return get_payment_sources(
-			company=self.company,
-			mode_of_payment=self.mode_of_payment,
-			from_date=self.from_date,
-			to_date=self.to_date,
+		template = frappe.get_doc('Payment Settlement Template', self.template)
+
+		self.set('accounts', [{
+			'mode_of_payment': account.mode_of_payment,
+			'clearing_account': account.clearing_account,
+			'clearing_account_currency': account.clearing_account_currency,
+			'bank_account': account.bank_account,
+			'settlement_account': account.settlement_account,
+			'settlement_account_currency': account.settlement_account_currency
+		} for account in template.accounts])
+
+		self.set('components', [{
+			'account': component.account,
+			'account_currency': component.account_currency,
+			'calculation_method': component.calculation_method,
+			'rate': component.rate,
+		} for component in template.components])
+
+	@frappe.whitelist(allow_guest=False)
+	def fetch_references(self):
+		""" Calculate Reference Docs """
+		from_date = getdate(self.from_date)
+		to_date = getdate(self.to_date)
+
+		references = []
+
+		for account in self.accounts:
+			references.extend(self._get_payment_entry_references(account, from_date, to_date))
+			references.extend(self._get_sales_invoice_payment_references(account, from_date, to_date))
+
+		self.set('references', references)
+		self._set_accounts_clearing_totals()
+
+	@frappe.whitelist(allow_guest=False)
+	def calculate_account_totals(self):
+		self._set_accounts_clearing_totals()
+
+	def _set_accounts_clearing_totals(self):
+		for account in self.accounts:
+			references = [
+				reference
+				for reference in self.references
+				if reference.mode_of_payment == account.mode_of_payment
+			]  # Get only References related to Clearing Account(by mode of payment)
+
+			account.reference_count = len(references)
+			account.clearing_amount = sum(reference.amount for reference in references)
+			account.clearing_base_amount = sum(reference.base_amount for reference in references)
+
+	def _get_payment_entry_references(self, account, from_date, to_date):
+		payment_entry = frappe.qb.DocType('Payment Entry')
+
+		references = (
+			frappe.qb.from_(payment_entry)
+			.select(
+				ConstantColumn('Payment Entry').as_('reference_doctype'),
+				payment_entry.name.as_('reference_name'),
+				payment_entry.posting_date,
+				payment_entry.party_type,
+				payment_entry.party,
+				payment_entry.party_name,
+				payment_entry.mode_of_payment,
+				payment_entry.paid_to_account_currency.as_('currency'),
+				payment_entry.received_amount.as_('amount'),
+				payment_entry.base_received_amount.as_('base_amount'),
+				payment_entry.reference_no,
+			).where(
+				(payment_entry.docstatus == 1)
+				& (payment_entry.company == self.company)
+				& (payment_entry.payment_type == 'Receive')
+				& (payment_entry.mode_of_payment == account.mode_of_payment)
+				& (payment_entry.paid_to == account.clearing_account)
+				& (payment_entry.posting_date >= from_date)
+				& (payment_entry.posting_date <= to_date)
+			)
+			.orderby(payment_entry.posting_date)
+			.orderby(payment_entry.name)
 		)
 
-	def _validate_fetch_filters(self):
-		required_fields = {
-			'company': _('Company'),
-			'mode_of_payment': _('Mode of Payment'),
-			'from_date': _('From Date'),
-			'to_date': _('To Date'),
-		}
-		missing = [label for fieldname, label in required_fields.items() if not self.get(fieldname)]
+		return references.run(as_dict=True)
 
-		if missing:
-			frappe.throw(_('Please set {0} before fetching payments.').format(', '.join(missing)))
+	def _get_sales_invoice_payment_references(self, account, from_date, to_date):
+		sales_invoice = frappe.qb.DocType('Sales Invoice')
+		sales_invoice_payment = frappe.qb.DocType('Sales Invoice Payment')
 
+		references = (
+			frappe.qb.from_(sales_invoice)
+			.inner_join(sales_invoice_payment)
+			.on(
+				(sales_invoice_payment.parent == sales_invoice.name)
+				& (sales_invoice_payment.parenttype == 'Sales Invoice')
+			).select(
+				ConstantColumn('Sales Invoice').as_('reference_doctype'),
+				sales_invoice.name.as_('reference_name'),
+				sales_invoice_payment.name.as_('reference_row_name'),
+				sales_invoice.posting_date,
+				ConstantColumn('Customer').as_('party_type'),
+				sales_invoice.customer.as_('party'),
+				sales_invoice.customer_name.as_('party_name'),
+				sales_invoice_payment.mode_of_payment,
+				sales_invoice.currency.as_('currency'),
+				sales_invoice_payment.amount.as_('amount'),
+				sales_invoice_payment.base_amount.as_('base_amount'),
+				sales_invoice_payment.reference_no,
+			).where(
+				(sales_invoice.docstatus == 1)
+				& (sales_invoice.is_return == 0)
+				& (sales_invoice.company == self.company)
+				& (sales_invoice_payment.mode_of_payment == account.mode_of_payment)
+				& (sales_invoice_payment.account == account.clearing_account)
+				& (sales_invoice.posting_date >= from_date)
+				& (sales_invoice.posting_date <= to_date)
+			)
+			.orderby(sales_invoice.posting_date)
+			.orderby(sales_invoice.name)
+			.orderby(sales_invoice_payment.idx)
+		)
 
-@frappe.whitelist()
-def get_payment_sources(company: str, mode_of_payment: str, from_date: str, to_date: str):
-	from_date_only, to_date_only = _validate_fetch_filters(company, mode_of_payment, from_date, to_date)
-
-	payment_entries = frappe.get_all(
-		'Payment Entry',
-		filters={
-			'docstatus': 1,
-			'company': company,
-			'mode_of_payment': mode_of_payment,
-			'payment_type': 'Receive',
-			'posting_date': ['between', [from_date_only, to_date_only]],
-		},
-		fields=[
-			'name',
-			'posting_date',
-			'party_type',
-			'party',
-			'party_name',
-			'paid_from',
-			'paid_to',
-			'received_amount',
-			'base_received_amount',
-			'reference_no',
-		],
-		order_by='posting_date asc, name asc',
-	)
-
-	sales_invoice_payments = frappe.db.sql(
-		"""
-		select
-			sip.name as sales_invoice_payment_row,
-			sip.parent as sales_invoice,
-			si.posting_date,
-			si.customer,
-			si.customer_name,
-			sip.amount,
-			sip.base_amount,
-			sip.reference_no
-		from `tabSales Invoice Payment` sip
-		inner join `tabSales Invoice` si on si.name = sip.parent
-		where
-			si.docstatus = 1
-			and ifnull(si.is_return, 0) = 0
-			and si.company = %(company)s
-			and sip.mode_of_payment = %(mode_of_payment)s
-			and si.posting_date between %(from_date)s and %(to_date)s
-		order by si.posting_date asc, sip.parent asc, sip.idx asc
-		""",
-		{
-			'company': company,
-			'mode_of_payment': mode_of_payment,
-			'from_date': from_date_only,
-			'to_date': to_date_only,
-		},
-		as_dict=True,
-	)
-
-	payment_entry_total = sum(flt(d.base_received_amount) for d in payment_entries)
-	sales_invoice_payment_total = sum(flt(d.base_amount) for d in sales_invoice_payments)
-
-	return {
-		'filters': {
-			'company': company,
-			'mode_of_payment': mode_of_payment,
-			'from_date': str(from_date_only),
-			'to_date': str(to_date_only),
-		},
-		'payment_entries': payment_entries,
-		'sales_invoice_payments': sales_invoice_payments,
-		'totals': {
-			'payment_entries_count': len(payment_entries),
-			'sales_invoice_payments_count': len(sales_invoice_payments),
-			'payment_entries_base_amount': payment_entry_total,
-			'sales_invoice_payments_base_amount': sales_invoice_payment_total,
-			'base_amount': payment_entry_total + sales_invoice_payment_total,
-		},
-	}
-
-
-def _validate_fetch_filters(company: str, mode_of_payment: str, from_date: str, to_date: str):
-	if not company:
-		frappe.throw(_('Company is required.'))
-	if not mode_of_payment:
-		frappe.throw(_('Mode of Payment is required.'))
-	if not from_date:
-		frappe.throw(_('From Date is required.'))
-	if not to_date:
-		frappe.throw(_('To Date is required.'))
-
-	from_date_only = getdate(from_date)
-	to_date_only = getdate(to_date)
-
-	if from_date_only > to_date_only:
-		frappe.throw(_('From Date cannot be later than To Date.'))
-
-	return from_date_only, to_date_only
+		return references.run(as_dict=True)
