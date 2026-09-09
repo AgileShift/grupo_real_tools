@@ -19,7 +19,7 @@ class PaymentSettlementEntryComponent(Document):
 		parentfield: DF.Data
 		parenttype: DF.Data
 		rate: DF.Percent
-		user_remark: DF.Data | None
+		user_remark: DF.SmallText | None
 	# end: auto-generated types
 
 	pass
