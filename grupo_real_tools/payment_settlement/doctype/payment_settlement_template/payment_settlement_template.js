@@ -1,5 +1,5 @@
 frappe.ui.form.on("Payment Settlement Template", {
-	onload(frm) {
+	setup(frm) {
 		// Prevent selecting the same Mode of Payment more than once.
 		frm.set_query('mode_of_payment', 'accounts', (doc) => ({
 			filters: {
@@ -11,6 +11,13 @@ frappe.ui.form.on("Payment Settlement Template", {
 		frm.set_query('account', 'components', (doc) => ({
 			filters: {
 				name: ['not in', doc.accounts.flatMap((row) => [row.clearing_account, row.settlement_account]).filter(Boolean)]
+			}
+		}));
+
+		// Prevent Apply debit or credit calculations to accounts other than clearing accounts
+		frm.set_query('apply_to', 'components', (doc) => ({
+			filters: {
+				name: ['in', (doc.accounts || []).map((row) => row.clearing_account).filter(Boolean)]
 			}
 		}));
 	},

@@ -11,7 +11,8 @@ class PaymentSettlementTemplateComponent(Document):
 		from frappe.types import DF
 
 		account: DF.Link
-		account_currency: DF.Link | None
+		account_currency: DF.Link
+		apply_to: DF.Link | None
 		calculation_method: DF.Literal["", "Percentage", "Fixed Amount", "Manual"]
 		parent: DF.Data
 		parentfield: DF.Data
