@@ -13,6 +13,7 @@ class PaymentSettlementEntryReference(Document):
 		amount: DF.Currency
 		base_amount: DF.Currency
 		currency: DF.Link
+		exchange_rate: DF.Float
 		mode_of_payment: DF.Link | None
 		parent: DF.Data
 		parentfield: DF.Data

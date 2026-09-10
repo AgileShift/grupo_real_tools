@@ -1,7 +1,8 @@
 import frappe
 from frappe.model.document import Document
 from frappe.query_builder.custom import ConstantColumn
-from frappe.utils import getdate
+from frappe.utils import flt, getdate
+from erpnext.setup.utils import get_exchange_rate
 
 
 class PaymentSettlementEntry(Document):
@@ -21,6 +22,7 @@ class PaymentSettlementEntry(Document):
 		company: DF.Link
 		components: DF.Table[PaymentSettlementEntryComponent]
 		from_date: DF.Datetime
+		journal_entry: DF.Link | None
 		posting_date: DF.Date
 		references: DF.Table[PaymentSettlementEntryReference]
 		template: DF.Link
@@ -30,15 +32,139 @@ class PaymentSettlementEntry(Document):
 	# end: auto-generated types
 
 	def validate(self):
-		self._set_accounts_clearing_totals()
+		self.calculate()
+
+	def before_submit(self):
+		if not self.references:
+			frappe.throw('Agrega referencias antes de confirmar el settlement.')
+		if self.difference:
+			frappe.throw('La diferencia debe ser cero antes de confirmar el settlement.')
+		self._validate_settlement_references()
+
+	def on_submit(self):
+		company = frappe.get_cached_doc('Company', self.company)
+		journal = frappe.new_doc('Journal Entry')
+		journal.company = self.company
+		journal.posting_date = self.posting_date
+		journal.voucher_type = 'Journal Entry'
+		journal.multi_currency = 1
+		journal.user_remark = f'Payment Settlement Entry: {self.name}'
+
+		for component in self.components:
+			if not (component.debit_in_account_currency or component.credit_in_account_currency):
+				continue
+			journal.append('accounts', {
+				'account': component.account,
+				'account_currency': component.account_currency,
+				'exchange_rate': component.exchange_rate,
+				'debit_in_account_currency': component.debit_in_account_currency,
+				'credit_in_account_currency': component.credit_in_account_currency,
+				'cost_center': (
+					company.round_off_cost_center or company.cost_center
+					if component.account == company.round_off_account else company.cost_center
+				),
+				'user_remark': component.user_remark,
+			})
+
+		journal.insert()
+		# ERPNext recalculates its own amounts; do not post a different closure silently.
+		for component, row in zip(
+			[c for c in self.components if c.debit_in_account_currency or c.credit_in_account_currency],
+			journal.accounts,
+		):
+			if row.debit != component.debit or row.credit != component.credit:
+				frappe.throw(f'El Journal Entry calcula montos distintos para {component.account}. Revisa la tasa y precisión.')
+		# Keep the JE and settlement in one transaction, including large journals.
+		journal._submit()
+		self.db_set('journal_entry', journal.name)
+
+	def on_cancel(self):
+		if self.journal_entry:
+			journal = frappe.get_doc('Journal Entry', self.journal_entry)
+			if journal.docstatus == 1:
+				journal._cancel()
+			elif journal.docstatus != 2:
+				frappe.throw('El Journal Entry asociado no está confirmado ni cancelado.')
+
+	@staticmethod
+	def _reference_key(reference):
+		return (reference.reference_doctype, reference.reference_name, reference.reference_row_name or '')
+
+	def _validate_settlement_references(self):
+		# Serialize submissions for this company until the surrounding transaction ends.
+		frappe.db.get_value('Company', self.company, 'name', for_update=True)
+		seen = set()
+		for reference in sorted(self.references, key=self._reference_key):
+			key = self._reference_key(reference)
+			if key in seen:
+				frappe.throw(f'Referencia duplicada en este cierre: {reference.reference_name}.')
+			seen.add(key)
+			if reference.reference_doctype not in ('Sales Invoice', 'Payment Entry'):
+				frappe.throw('Tipo de referencia no soportado.')
+			status = frappe.db.get_value(
+				reference.reference_doctype, reference.reference_name, 'docstatus', for_update=True
+			)
+			if status != 1:
+				frappe.throw(f'La referencia {reference.reference_name} ya no está confirmada.')
+			filters = {
+				'reference_doctype': reference.reference_doctype,
+				'reference_name': reference.reference_name,
+				'docstatus': 1,
+				'parent': ['!=', self.name],
+				'parenttype': self.doctype,
+			}
+			if reference.reference_doctype == 'Sales Invoice':
+				if not reference.reference_row_name:
+					frappe.throw('La referencia Sales Invoice necesita su fila de pago.')
+				filters['reference_row_name'] = reference.reference_row_name
+			elif reference.reference_row_name:
+				frappe.throw('Payment Entry no debe tener una fila de pago de factura.')
+			previous = frappe.db.get_value(
+				'Payment Settlement Entry Reference', filters, 'parent', for_update=True
+			)
+			if previous:
+				frappe.throw(f'{reference.reference_name} ya fue liquidada en {previous}.')
+
+	@property
+	def difference(self):
+		return flt(self.total_debit - self.total_credit, self.precision('difference'))
+
+	@frappe.whitelist()
+	def make_difference(self, adjustment_type: str):
+		account_fields = {
+			'Round Off': 'round_off_account',
+			'Exchange Gain or Loss': 'exchange_gain_loss_account',
+			'Write Off': 'write_off_account',
+		}
+
+		if adjustment_type not in account_fields:
+			frappe.throw('Tipo de ajuste inválido.')
+
+		self.calculate()
+		if not self.difference:
+			return
+
+		if not (account := frappe.get_cached_value('Company', self.company, account_fields[adjustment_type])):
+			frappe.throw(f'Configura la cuenta de {adjustment_type} en Company.')
+
+		self.append('components', {
+			'type': 'Adjustment',
+			'calculation_method': 'Manual',
+			'account': account,
+			'account_currency': frappe.get_cached_value('Account', account, 'account_currency'),
+			'debit_in_account_currency': max(-self.difference, 0),
+			'credit_in_account_currency': max(self.difference, 0),
+			'user_remark': adjustment_type,
+		})
+
+		self.calculate()
 
 	@frappe.whitelist(allow_guest=False)
 	def fetch_template_data(self):
-		""" Copy Template Fields """
-		self.set('accounts', [])
-		self.set('components', [])
-
+		""" Copy Template Values as Skeleton """
 		if not self.template:
+			self.set('accounts', [])
+			self.set('components', [])
 			return
 
 		template = frappe.get_doc('Payment Settlement Template', self.template)
@@ -52,33 +178,61 @@ class PaymentSettlementEntry(Document):
 			'settlement_account_currency': account.settlement_account_currency
 		} for account in template.accounts])
 
-		self.set('components', [{
+		clearing_accounts, settlement_accounts = [], []
+		for account in template.accounts:
+			clearing_accounts.append({
+				'account': account.clearing_account,
+				'account_currency': account.clearing_account_currency,
+				'calculation_method': 'Manual', 'type': 'Clearing'
+			})
+
+			settlement_accounts.append({
+				'account': account.settlement_account,
+				'account_currency': account.settlement_account_currency,
+				'calculation_method': 'Manual', 'type': 'Settlement'
+			})
+
+		self.set('components', clearing_accounts + [{
 			'account': component.account,
 			'account_currency': component.account_currency,
 			'calculation_method': component.calculation_method,
 			'rate': component.rate,
-		} for component in template.components])
+			'apply_to': component.apply_to,
+			'type': 'Component',
+		} for component in template.components] + settlement_accounts)
 
 	@frappe.whitelist(allow_guest=False)
 	def fetch_references(self):
-		""" Calculate Reference Docs """
+		""" Get Reference Docs """
 		from_date = getdate(self.from_date)
 		to_date = getdate(self.to_date)
 
 		references = []
-
 		for account in self.accounts:
 			references.extend(self._get_payment_entry_references(account, from_date, to_date))
 			references.extend(self._get_sales_invoice_payment_references(account, from_date, to_date))
 
-		self.set('references', references)
-		self._set_accounts_clearing_totals()
+		settled = {
+			self._reference_key(row) for row in frappe.get_all(
+				'Payment Settlement Entry Reference',
+				filters={'docstatus': 1, 'parenttype': self.doctype},
+				fields=['reference_doctype', 'reference_name', 'reference_row_name'],
+			)
+		}
+		self.set('references', [row for row in references if self._reference_key(row) not in settled])
+		self.calculate()
 
 	@frappe.whitelist(allow_guest=False)
-	def calculate_account_totals(self):
-		self._set_accounts_clearing_totals()
+	def calculate(self):
+		self._calculate_clearing_components()
+		self._set_component_exchange_rates()
+		self._calculate_settlement_components()
 
-	def _set_accounts_clearing_totals(self):
+		# Calculate doc totals
+		self.total_debit = flt(sum(row.debit for row in self.components), self.precision('total_debit'))
+		self.total_credit = flt(sum(row.credit for row in self.components), self.precision('total_credit'))
+
+	def _calculate_clearing_components(self):
 		for account in self.accounts:
 			references = [
 				reference
@@ -89,6 +243,127 @@ class PaymentSettlementEntry(Document):
 			account.reference_count = len(references)
 			account.clearing_amount = sum(reference.amount for reference in references)
 			account.clearing_base_amount = sum(reference.base_amount for reference in references)
+
+			for component in self.components:  # Calculate Clearing Values for Components Table
+				if component.type == 'Clearing' and component.account == account.clearing_account:
+					component.debit, component.debit_in_account_currency = 0, 0
+					component.credit = flt(account.clearing_base_amount, component.precision('credit'))
+					component.credit_in_account_currency = flt(
+						account.clearing_amount, component.precision('credit_in_account_currency')
+					)
+					break  # Match each existing clearing row only once.
+
+	def _set_component_exchange_rates(self):
+		if not self.posting_date:
+			return
+
+		company_currency = frappe.get_cached_value('Company', self.company, 'default_currency')
+		rates = {}
+
+		for component in self.components:
+			if component.type == 'Clearing':  # Auto Calculate -> is an aggregate of all the references
+				component.exchange_rate = (
+					component.credit / component.credit_in_account_currency if component.credit_in_account_currency else 0
+				)
+				continue
+			elif component.account_currency == company_currency:
+				component.exchange_rate = 1
+			elif not component.exchange_rate:
+				if component.account_currency not in rates:
+					rates[component.account_currency] = get_exchange_rate(
+						component.account_currency, company_currency, self.posting_date
+					)
+				component.exchange_rate = rates[component.account_currency]
+
+			# Calculate internal component values
+			self._calculate_component_base_amounts(component)
+
+	def _calculate_component_base_amounts(self, component):
+		component.debit_in_account_currency = flt(
+			component.debit_in_account_currency, component.precision('debit_in_account_currency')
+		)
+		component.credit_in_account_currency = flt(
+			component.credit_in_account_currency, component.precision('credit_in_account_currency')
+		)
+		component.debit = flt(
+			component.debit_in_account_currency * component.exchange_rate, component.precision('debit')
+		)
+		component.credit = flt(
+			component.credit_in_account_currency * component.exchange_rate, component.precision('credit')
+		)
+
+	def _calculate_settlement_components(self):
+		settlements = {}
+		clearing_accounts = {}
+		settlement_components = {}
+
+		for component in self.components:
+			if component.type == 'Settlement':
+				if component.override:
+					previous = settlement_components.get(component.account)
+					if previous and previous.override:
+						frappe.throw(f'Solo una fila puede tener Override para {component.account}.')
+					settlement_components[component.account] = component
+				else:
+					settlement_components.setdefault(component.account, component)
+
+		for account in self.accounts:
+			clearing_accounts[account.clearing_account] = account.settlement_account
+			settlement = settlement_components.get(account.settlement_account)
+			if not settlement:
+				frappe.throw(f'Falta el componente de settlement para {account.settlement_account}.')
+			if not settlement.exchange_rate or settlement.exchange_rate <= 0:
+				frappe.throw(f'Fila {settlement.idx}: falta una tasa de cambio válida.')
+
+			# Keep the operational balance in the destination account currency.
+			if account.clearing_account_currency == settlement.account_currency:
+				amount = account.clearing_amount
+			else:
+				amount = account.clearing_base_amount / settlement.exchange_rate
+			settlements.setdefault(account.settlement_account, 0)
+			settlements[account.settlement_account] += amount
+
+		for component in self.components:
+			if component.type not in ('Component', 'Manual'):
+				continue
+
+			adjustment = component.debit_in_account_currency - component.credit_in_account_currency
+			if not adjustment:
+				continue
+
+			if component.apply_to:
+				settlement_account = clearing_accounts.get(component.apply_to)
+				if not settlement_account:
+					frappe.throw(f'Fila {component.idx}: Apply To no pertenece a este cierre.')
+			elif len(settlements) == 1:
+				settlement_account = next(iter(settlements))
+			else:
+				frappe.throw(
+					f'Fila {component.idx}: selecciona Apply To; '
+					'el cierre tiene varios destinos.'
+				)
+
+			settlement = settlement_components[settlement_account]
+			if component.account_currency != settlement.account_currency:
+				if not component.exchange_rate or component.exchange_rate <= 0:
+					frappe.throw(f'Fila {component.idx}: falta una tasa de cambio válida.')
+				adjustment = (component.debit - component.credit) / settlement.exchange_rate
+
+			settlements[settlement_account] -= adjustment
+
+		for component in self.components:
+			if component.type != 'Settlement' or component.account not in settlements:
+				continue
+
+			if component is not settlement_components[component.account]:
+				component.debit_in_account_currency = 0
+				component.credit_in_account_currency = 0
+			elif not component.override:
+				balance = settlements[component.account]
+				component.debit_in_account_currency = max(balance, 0)
+				component.credit_in_account_currency = max(-balance, 0)
+			# Base amounts may leave an exchange difference; do not alter the cash balance to hide it.
+			self._calculate_component_base_amounts(component)
 
 	def _get_payment_entry_references(self, account, from_date, to_date):
 		payment_entry = frappe.qb.DocType('Payment Entry')
@@ -104,6 +379,7 @@ class PaymentSettlementEntry(Document):
 				payment_entry.party_name,
 				payment_entry.mode_of_payment,
 				payment_entry.paid_to_account_currency.as_('currency'),
+				payment_entry.target_exchange_rate.as_('exchange_rate'),
 				payment_entry.received_amount.as_('amount'),
 				payment_entry.base_received_amount.as_('base_amount'),
 				payment_entry.reference_no,
@@ -141,9 +417,10 @@ class PaymentSettlementEntry(Document):
 				sales_invoice.customer.as_('party'),
 				sales_invoice.customer_name.as_('party_name'),
 				sales_invoice_payment.mode_of_payment,
-				sales_invoice.currency.as_('currency'),
-				sales_invoice_payment.amount.as_('amount'),
-				sales_invoice_payment.base_amount.as_('base_amount'),
+				sales_invoice.currency,
+				sales_invoice.conversion_rate.as_('exchange_rate'),
+				sales_invoice_payment.amount,
+				sales_invoice_payment.base_amount,
 				sales_invoice_payment.reference_no,
 			).where(
 				(sales_invoice.docstatus == 1)

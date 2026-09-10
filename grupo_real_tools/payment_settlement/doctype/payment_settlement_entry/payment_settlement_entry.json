@@ -13,6 +13,7 @@
   "template",
   "column_break_ycpr",
   "posting_date",
+  "journal_entry",
   "column_break_cycv",
   "from_date",
   "to_date",
@@ -22,8 +23,12 @@
   "references",
   "section_break_ltoe",
   "components",
+  "section_break_ktbk",
   "total_debit",
-  "total_credit"
+  "column_break_efba",
+  "total_credit",
+  "difference",
+  "make_difference"
  ],
  "fields": [
   {
@@ -55,7 +60,6 @@
    "reqd": 1
   },
   {
-   "bold": 1,
    "fieldname": "company",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -67,7 +71,6 @@
    "set_only_once": 1
   },
   {
-   "bold": 1,
    "fieldname": "from_date",
    "fieldtype": "Datetime",
    "in_list_view": 1,
@@ -75,7 +78,6 @@
    "reqd": 1
   },
   {
-   "bold": 1,
    "fieldname": "to_date",
    "fieldtype": "Datetime",
    "in_list_view": 1,
@@ -89,6 +91,7 @@
   {
    "fieldname": "section_break_ltoe",
    "fieldtype": "Section Break",
+   "hide_border": 1,
    "label": "Settlement Components"
   },
   {
@@ -111,17 +114,17 @@
    "reqd": 1
   },
   {
+   "default": "0",
    "fieldname": "total_debit",
    "fieldtype": "Currency",
    "label": "Total Debit",
-   "options": "currency",
    "read_only": 1
   },
   {
+   "default": "0",
    "fieldname": "total_credit",
    "fieldtype": "Currency",
    "label": "Total Credit",
-   "options": "currency",
    "read_only": 1
   },
   {
@@ -147,13 +150,45 @@
    "options": "Payment Settlement Template",
    "reqd": 1,
    "set_only_once": 1
+  },
+  {
+   "fieldname": "section_break_ktbk",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_efba",
+   "fieldtype": "Column Break"
+  },
+  {
+   "bold": 1,
+   "fieldname": "difference",
+   "fieldtype": "Currency",
+   "is_virtual": 1,
+   "label": "Difference (Dr - Cr)",
+   "read_only": 1
+  },
+  {
+   "button_color": "Primary",
+   "depends_on": "difference",
+   "fieldname": "make_difference",
+   "fieldtype": "Button",
+   "is_virtual": 1,
+   "label": "Make Difference Entry"
+  },
+  {
+   "fieldname": "journal_entry",
+   "fieldtype": "Link",
+   "label": "Journal Entry",
+   "no_copy": 1,
+   "options": "Journal Entry",
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-09-09 13:20:55.378041",
+ "modified": "2026-09-10 12:23:13.770546",
  "modified_by": "Administrator",
  "module": "Payment Settlement",
  "name": "Payment Settlement Entry",

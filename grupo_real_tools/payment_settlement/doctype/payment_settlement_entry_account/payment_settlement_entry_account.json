@@ -7,16 +7,16 @@
   "mode_of_payment",
   "clearing_account",
   "clearing_account_currency",
+  "column_break_robj",
+  "reference_count",
+  "clearing_amount",
+  "clearing_base_amount",
+  "section_break_vzyb",
   "column_break_owes",
   "bank_account",
   "settlement_account",
   "settlement_account_currency",
-  "section_break_mcbw",
-  "reference_count",
-  "column_break_xiwg",
-  "clearing_amount",
-  "column_break_vgfr",
-  "clearing_base_amount"
+  "column_break_kymc"
  ],
  "fields": [
   {
@@ -91,6 +91,7 @@
    "reqd": 1
   },
   {
+   "alignment": "Center",
    "bold": 1,
    "columns": 1,
    "fieldname": "reference_count",
@@ -101,6 +102,7 @@
    "read_only": 1
   },
   {
+   "alignment": "Center",
    "bold": 1,
    "columns": 1,
    "fieldname": "clearing_amount",
@@ -112,7 +114,7 @@
    "read_only": 1
   },
   {
-   "bold": 1,
+   "alignment": "Center",
    "columns": 1,
    "fieldname": "clearing_base_amount",
    "fieldtype": "Currency",
@@ -123,15 +125,15 @@
    "read_only": 1
   },
   {
-   "fieldname": "section_break_mcbw",
+   "fieldname": "section_break_vzyb",
    "fieldtype": "Section Break"
   },
   {
-   "fieldname": "column_break_xiwg",
+   "fieldname": "column_break_kymc",
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "column_break_vgfr",
+   "fieldname": "column_break_robj",
    "fieldtype": "Column Break"
   }
  ],
@@ -139,7 +141,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-09-09 13:13:27.995503",
+ "modified": "2026-09-09 16:44:34.786215",
  "modified_by": "Administrator",
  "module": "Payment Settlement",
  "name": "Payment Settlement Entry Account",

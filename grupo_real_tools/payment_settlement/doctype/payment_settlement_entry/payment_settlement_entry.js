@@ -3,6 +3,12 @@ frappe.ui.form.on("Payment Settlement Entry", {
 		frm.page.sidebar.toggle(false); // Hide Sidebar
 
 		frm.set_df_property('references', 'cannot_add_rows', true);
+
+		frm.set_query('apply_to', 'components', (doc) => ({
+			filters: {
+				name: ['in', (doc.accounts || []).map((row) => row.clearing_account).filter(Boolean)]
+			}
+		}));
 	},
 
 	refresh(frm) {
@@ -32,20 +38,38 @@ frappe.ui.form.on("Payment Settlement Entry", {
 		frm.events.fetch_references(frm);
 	},
 
+	make_difference(frm) {
+		frappe.prompt({
+				fieldname: 'adjustment_type',
+				fieldtype: 'Select',
+				label: __('Select Difference Account'),
+				options: [
+					'Round Off',
+					'Exchange Gain or Loss',
+					'Write Off'
+				],
+				reqd: 1
+			},
+			({adjustment_type}) => frm.call('make_difference', {adjustment_type}),
+			__('Make Difference Entry'),
+			__('Apply')
+		);
+	},
+
 	// Custom Functions
 
 	fetch_references(frm) {
 		if (!frm.doc.from_date || !frm.doc.to_date || !frm.doc.template || !frm.doc.accounts?.length) {
 			frm.clear_table('references');
-			return frm.call('calculate_account_totals');
+			return frm.call('calculate');
 		}
 
 		return frm.call('fetch_references');
-	}
+	},
 });
 
 frappe.ui.form.on('Payment Settlement Entry Reference', {
 	references_remove(frm) {
-		return frm.call('calculate_account_totals');
+		return frm.call('calculate');
 	},
 });

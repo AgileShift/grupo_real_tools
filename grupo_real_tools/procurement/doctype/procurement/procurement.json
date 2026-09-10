@@ -1,0 +1,173 @@
+{
+ "actions": [],
+ "allow_bulk_edit": 1,
+ "allow_rename": 1,
+ "creation": "2025-04-19 21:34:43.071058",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "supplier_invoice",
+  "company",
+  "supplier",
+  "supplier_invoice_date",
+  "column_break_ewif",
+  "transportation_method",
+  "column_break_otni",
+  "transporter_invoice_no",
+  "transporter_invoice_date",
+  "section_break_rnzz",
+  "items",
+  "item_proposals",
+  "test",
+  "section_break_yqty",
+  "total_qty",
+  "column_break_kkba",
+  "subtotal",
+  "discount",
+  "total"
+ ],
+ "fields": [
+  {
+   "fieldname": "supplier_invoice",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Supplier Invoice No",
+   "reqd": 1
+  },
+  {
+   "fieldname": "supplier_invoice_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Supplier Invoice Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_ewif",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "transportation_method",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Transportation Method",
+   "options": "SEA\nAIR"
+  },
+  {
+   "fieldname": "column_break_otni",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "transporter_invoice_no",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Transporter Invoice No"
+  },
+  {
+   "fieldname": "transporter_invoice_date",
+   "fieldtype": "Date",
+   "label": "Transporter Invoice Date"
+  },
+  {
+   "fieldname": "section_break_rnzz",
+   "fieldtype": "Section Break",
+   "hide_border": 1
+  },
+  {
+   "allow_bulk_edit": 1,
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "options": "Procurement Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "test",
+   "fieldtype": "Data",
+   "label": "test"
+  },
+  {
+   "fieldname": "section_break_yqty",
+   "fieldtype": "Section Break"
+  },
+  {
+   "bold": 1,
+   "fieldname": "total_qty",
+   "fieldtype": "Float",
+   "label": "Total QTY",
+   "non_negative": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_kkba",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "subtotal",
+   "fieldtype": "Currency",
+   "label": "SubTotal",
+   "read_only": 1
+  },
+  {
+   "fieldname": "discount",
+   "fieldtype": "Currency",
+   "label": "Discount",
+   "read_only": 1
+  },
+  {
+   "bold": 1,
+   "fieldname": "total",
+   "fieldtype": "Currency",
+   "label": "Total",
+   "non_negative": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "label": "Supplier",
+   "options": "Supplier",
+   "reqd": 1
+  },
+  {
+   "fieldname": "item_proposals",
+   "fieldtype": "Table",
+   "label": "Item Proposals",
+   "options": "Procurement Item Proposal"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-10 22:51:43.049796",
+ "modified_by": "Administrator",
+ "module": "Procurement",
+ "name": "Procurement",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
