@@ -99,7 +99,8 @@
    "fieldname": "components",
    "fieldtype": "Table",
    "label": "Components",
-   "options": "Payment Settlement Entry Component"
+   "options": "Payment Settlement Entry Component",
+   "reqd": 1
   },
   {
    "fieldname": "section_break_juym",
@@ -130,14 +131,15 @@
   {
    "fieldname": "section_break_fbkr",
    "fieldtype": "Section Break",
-   "label": "Clearing & Settlements Accounts"
+   "label": "Clearing & Settlement Accounts"
   },
   {
    "fieldname": "accounts",
    "fieldtype": "Table",
    "label": "Accounts",
    "options": "Payment Settlement Entry Account",
-   "read_only": 1
+   "read_only": 1,
+   "reqd": 1
   },
   {
    "bold": 1,
@@ -188,7 +190,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-09-10 12:23:13.770546",
+ "modified": "2026-09-10 21:31:45.674639",
  "modified_by": "Administrator",
  "module": "Payment Settlement",
  "name": "Payment Settlement Entry",

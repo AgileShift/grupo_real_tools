@@ -43,12 +43,12 @@ frappe.ui.form.on("Payment Settlement Entry", {
 				fieldname: 'adjustment_type',
 				fieldtype: 'Select',
 				label: __('Select Difference Account'),
+				reqd: 1,
 				options: [
 					'Round Off',
-					'Exchange Gain or Loss',
+					'Exchange Gain Or Loss',
 					'Write Off'
-				],
-				reqd: 1
+				]
 			},
 			({adjustment_type}) => frm.call('make_difference', {adjustment_type}),
 			__('Make Difference Entry'),
@@ -57,7 +57,6 @@ frappe.ui.form.on("Payment Settlement Entry", {
 	},
 
 	// Custom Functions
-
 	fetch_references(frm) {
 		if (!frm.doc.from_date || !frm.doc.to_date || !frm.doc.template || !frm.doc.accounts?.length) {
 			frm.clear_table('references');
