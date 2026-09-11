@@ -59,6 +59,7 @@ class PaymentSettlementEntry(Document):
 
 			journal.append('accounts', {
 				'account': component.account,
+				'bank_account': component.bank_account,
 				'exchange_rate': component.exchange_rate,
 				'debit_in_account_currency': component.debit_in_account_currency,
 				'credit_in_account_currency': component.credit_in_account_currency,
@@ -151,6 +152,7 @@ class PaymentSettlementEntry(Document):
 			settlement_accounts.append({
 				'account': account.settlement_account,
 				'account_currency': account.settlement_account_currency,
+				'bank_account': account.bank_account,
 				'calculation_method': 'Manual', 'type': 'Settlement'
 			})
 
