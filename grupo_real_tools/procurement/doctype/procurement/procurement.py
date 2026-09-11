@@ -21,7 +21,6 @@ class Procurement(Document):
 		supplier: DF.Link
 		supplier_invoice: DF.Data
 		supplier_invoice_date: DF.Date
-		test: DF.Data | None
 		total: DF.Currency
 		total_qty: DF.Float
 		transportation_method: DF.Literal["SEA", "AIR"]

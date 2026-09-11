@@ -18,7 +18,6 @@
   "section_break_rnzz",
   "items",
   "item_proposals",
-  "test",
   "section_break_yqty",
   "total_qty",
   "column_break_kkba",
@@ -83,11 +82,6 @@
    "reqd": 1
   },
   {
-   "fieldname": "test",
-   "fieldtype": "Data",
-   "label": "test"
-  },
-  {
    "fieldname": "section_break_yqty",
    "fieldtype": "Section Break"
   },
@@ -106,7 +100,7 @@
   {
    "fieldname": "subtotal",
    "fieldtype": "Currency",
-   "label": "SubTotal",
+   "label": "Subtotal",
    "read_only": 1
   },
   {
@@ -147,7 +141,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-08-10 22:51:43.049796",
+ "modified": "2026-09-10 21:04:47.156213",
  "modified_by": "Administrator",
  "module": "Procurement",
  "name": "Procurement",
