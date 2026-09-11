@@ -1,0 +1,304 @@
+# Spanish translations for Grupo Real Tools.
+# Copyright (C) 2026 Agile Shift
+# This file is distributed under the same license as the Grupo Real Tools project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Grupo Real Tools VERSION\n"
+"Report-Msgid-Bugs-To: dev@gruporeal.org\n"
+"POT-Creation-Date: 2026-09-10 22:49-0745\n"
+"PO-Revision-Date: 2026-09-10 18:07-1945\n"
+"Last-Translator: dev@gruporeal.org\n"
+"Language: es\n"
+"Language-Team: dev@gruporeal.org\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.16.0\n"
+
+#. Option for the 'Transportation Method' (Select) field in DocType
+#. 'Procurement'
+#: grupo_real_tools/procurement/doctype/procurement/procurement.json
+msgid "AIR"
+msgstr ""
+
+#. Option for the 'Type' (Select) field in DocType 'Payment Settlement Entry
+#. Component'
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_component/payment_settlement_entry_component.json
+msgid "Adjustment"
+msgstr "Ajuste"
+
+#. Label of the attributes (Data) field in DocType 'Procurement Item Proposal'
+#: grupo_real_tools/procurement/doctype/procurement_item_proposal/procurement_item_proposal.json
+msgid "Attribute Values"
+msgstr ""
+
+#. Label of the attributes_json (JSON) field in DocType 'Procurement Item'
+#. Label of the attributes_json (JSON) field in DocType 'Procurement Item
+#. Proposal'
+#: grupo_real_tools/procurement/doctype/procurement_item/procurement_item.json
+#: grupo_real_tools/procurement/doctype/procurement_item_proposal/procurement_item_proposal.json
+msgid "Attributes JSON"
+msgstr ""
+
+#. Label of the calculation_method (Select) field in DocType 'Payment
+#. Settlement Entry Component'
+#. Settlement Template Component'
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_component/payment_settlement_entry_component.json
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_template_component/payment_settlement_template_component.json
+msgid "Calculation Method"
+msgstr "Método de cálculo"
+
+#. Option for the 'Type' (Select) field in DocType 'Payment Settlement Entry
+#. Component'
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_component/payment_settlement_entry_component.json
+msgid "Clearing"
+msgstr "Transitoria"
+
+#. Label of the section_break_fbkr (Section Break) field in DocType 'Payment
+#. Settlement Entry'
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.json
+msgid "Clearing & Settlement Accounts"
+msgstr "Cuentas transitorias y de liquidación"
+
+#. Label of the clearing_account (Link) field in DocType 'Payment Settlement
+#. Entry Account'
+#. Template Account'
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_account/payment_settlement_entry_account.json
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_template_account/payment_settlement_template_account.json
+msgid "Clearing Account"
+msgstr "Cuenta transitoria"
+
+#. Label of the clearing_account_currency (Link) field in DocType 'Payment
+#. Settlement Entry Account'
+#. Settlement Template Account'
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_account/payment_settlement_entry_account.json
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_template_account/payment_settlement_template_account.json
+msgid "Clearing Account Currency"
+msgstr "Moneda de la cuenta transitoria"
+
+#. Label of the clearing_amount (Currency) field in DocType 'Payment Settlement
+#. Entry Account'
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_account/payment_settlement_entry_account.json
+msgid "Clearing Amount"
+msgstr "Monto transitorio"
+
+#. Label of the clearing_base_amount (Currency) field in DocType 'Payment
+#. Settlement Entry Account'
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_account/payment_settlement_entry_account.json
+msgid "Clearing Base Amount (Company Currency)"
+msgstr "Monto transitorio (moneda de la empresa)"
+
+#. Label of the section_break_juym (Section Break) field in DocType 'Payment
+#. Settlement Entry'
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.json
+msgid "Clearing References"
+msgstr "Referencias a liquidar"
+
+#. Label of the configure_item_btn (Button) field in DocType 'Procurement Item'
+#: grupo_real_tools/procurement/doctype/procurement_item/procurement_item.json
+msgid "Configure Item"
+msgstr ""
+
+#. Label of the credit_in_account_currency (Currency) field in DocType 'Payment
+#. Settlement Entry Component'
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_component/payment_settlement_entry_component.json
+msgid "Credit in Account Currency"
+msgstr "Crédito en moneda de la cuenta"
+
+#. Label of the debit_in_account_currency (Currency) field in DocType 'Payment
+#. Settlement Entry Component'
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_component/payment_settlement_entry_component.json
+msgid "Debit in Account Currency"
+msgstr "Débito en moneda de la cuenta"
+
+#. Option for the 'Calculation Method' (Select) field in DocType 'Payment
+#. Settlement Entry Component'
+#. Settlement Template Component'
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_component/payment_settlement_entry_component.json
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_template_component/payment_settlement_template_component.json
+msgid "Fixed Amount"
+msgstr "Monto fijo"
+
+#. Label of the item_proposals (Table) field in DocType 'Procurement'
+#: grupo_real_tools/procurement/doctype/procurement/procurement.json
+msgid "Item Proposals"
+msgstr ""
+
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:314
+msgid "Missing settlement component for {0}."
+msgstr "Falta el componente de liquidación para {0}."
+
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:305
+msgid "Only one row can override {0}."
+msgstr "Solo una fila puede sobrescribir {0}."
+
+#. Label of the override (Check) field in DocType 'Payment Settlement Entry
+#. Component'
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_component/payment_settlement_entry_component.json
+msgid "Override"
+msgstr "Sobrescribir"
+
+#. Name of a DocType
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.json
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:53
+msgid "Payment Settlement Entry"
+msgstr "Liquidación de pagos"
+
+#. Name of a DocType
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_account/payment_settlement_entry_account.json
+msgid "Payment Settlement Entry Account"
+msgstr "Cuenta de liquidación de pagos"
+
+#. Name of a DocType
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_component/payment_settlement_entry_component.json
+msgid "Payment Settlement Entry Component"
+msgstr "Componente de liquidación de pagos"
+
+#. Name of a DocType
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_reference/payment_settlement_entry_reference.json
+msgid "Payment Settlement Entry Reference"
+msgstr "Referencia de liquidación de pagos"
+
+#. Name of a DocType
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_template/payment_settlement_template.json
+msgid "Payment Settlement Template"
+msgstr "Plantilla de liquidación de pagos"
+
+#. Name of a DocType
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_template_account/payment_settlement_template_account.json
+msgid "Payment Settlement Template Account"
+msgstr "Cuenta de plantilla de liquidación de pagos"
+
+#. Name of a DocType
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_template_component/payment_settlement_template_component.json
+msgid "Payment Settlement Template Component"
+msgstr "Componente de plantilla de liquidación de pagos"
+
+#. Name of a DocType
+#: grupo_real_tools/procurement/doctype/procurement_item/procurement_item.json
+msgid "Procurement Item"
+msgstr ""
+
+#. Name of a DocType
+#: grupo_real_tools/procurement/doctype/procurement_item_proposal/procurement_item_proposal.json
+msgid "Procurement Item Proposal"
+msgstr ""
+
+#. Label of the item_code (Data) field in DocType 'Procurement Item Proposal'
+#: grupo_real_tools/procurement/doctype/procurement_item_proposal/procurement_item_proposal.json
+msgid "Proposed Item Code"
+msgstr ""
+
+#. Label of the item_name (Data) field in DocType 'Procurement Item Proposal'
+#: grupo_real_tools/procurement/doctype/procurement_item_proposal/procurement_item_proposal.json
+msgid "Proposed Item Name"
+msgstr ""
+
+#. Label of the purchase_rate (Currency) field in DocType 'Procurement Item
+#. Proposal'
+#: grupo_real_tools/procurement/doctype/procurement_item_proposal/procurement_item_proposal.json
+msgid "Purchase Rate"
+msgstr ""
+
+#. Label of the reference_row_name (Data) field in DocType 'Payment Settlement
+#. Entry Reference'
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_reference/payment_settlement_entry_reference.json
+msgid "Reference Row Name"
+msgstr "ID de fila de referencia"
+
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:338
+msgid "Row {0}: Apply To does not belong to this settlement."
+msgstr "Fila {0}: Aplicar a no pertenece a esta liquidación."
+
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:316
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:351
+msgid "Row {0}: a valid exchange rate is required."
+msgstr "Fila {0}: se requiere una tasa de cambio válida."
+
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:344
+msgid "Row {0}: select Apply To because the settlement has multiple destinations."
+msgstr "Fila {0}: seleccione Aplicar a porque la liquidación tiene varios destinos."
+
+#. Option for the 'Transportation Method' (Select) field in DocType
+#. 'Procurement'
+#: grupo_real_tools/procurement/doctype/procurement/procurement.json
+msgid "SEA"
+msgstr ""
+
+#. Option for the 'Type' (Select) field in DocType 'Payment Settlement Entry
+#. Component'
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_component/payment_settlement_entry_component.json
+msgid "Settlement"
+msgstr "Liquidación"
+
+#. Label of the settlement_account (Link) field in DocType 'Payment Settlement
+#. Entry Account'
+#. Template Account'
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_account/payment_settlement_entry_account.json
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_template_account/payment_settlement_template_account.json
+msgid "Settlement Account"
+msgstr "Cuenta de liquidación"
+
+#. Label of the settlement_account_currency (Link) field in DocType 'Payment
+#. Settlement Entry Account'
+#. Settlement Template Account'
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_account/payment_settlement_entry_account.json
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_template_account/payment_settlement_template_account.json
+msgid "Settlement Account Currency"
+msgstr "Moneda de la cuenta de liquidación"
+
+#. Label of the section_break_ltoe (Section Break) field in DocType 'Payment
+#. Settlement Entry'
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.json
+msgid "Settlement Components"
+msgstr "Componentes de liquidación"
+
+#. Label of the source_item_code (Data) field in DocType 'Procurement Item
+#. Proposal'
+#: grupo_real_tools/procurement/doctype/procurement_item_proposal/procurement_item_proposal.json
+msgid "Source Item Code"
+msgstr ""
+
+#. Label of the subtotal (Currency) field in DocType 'Procurement'
+#. Label of the subtotal (Currency) field in DocType 'Procurement Item
+#. Proposal'
+#: grupo_real_tools/procurement/doctype/procurement/procurement.json
+#: grupo_real_tools/procurement/doctype/procurement_item_proposal/procurement_item_proposal.json
+msgid "Subtotal"
+msgstr ""
+
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:75
+msgid "The Journal Entry calculates different amounts for {0}. Check the exchange rate and precision."
+msgstr "El asiento contable calcula montos diferentes para {0}. Revise la tasa de cambio y la precisión."
+
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:88
+msgid "The linked Journal Entry is neither submitted nor cancelled."
+msgstr "El asiento contable vinculado no está confirmado ni cancelado."
+
+#. Label of the total_qty (Float) field in DocType 'Procurement'
+#: grupo_real_tools/procurement/doctype/procurement/procurement.json
+msgid "Total QTY"
+msgstr ""
+
+#. Label of the transportation_method (Select) field in DocType 'Procurement'
+#: grupo_real_tools/procurement/doctype/procurement/procurement.json
+msgid "Transportation Method"
+msgstr ""
+
+#. Label of the transporter_invoice_date (Date) field in DocType 'Procurement'
+#: grupo_real_tools/procurement/doctype/procurement/procurement.json
+msgid "Transporter Invoice Date"
+msgstr ""
+
+#. Label of the transporter_invoice_no (Data) field in DocType 'Procurement'
+#: grupo_real_tools/procurement/doctype/procurement/procurement.json
+msgid "Transporter Invoice No"
+msgstr ""
+
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:229
+msgid "{0} was already settled in {1}."
+msgstr "{0} ya se liquidó en {1}."
+
