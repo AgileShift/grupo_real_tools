@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Grupo Real Tools VERSION\n"
 "Report-Msgid-Bugs-To: dev@gruporeal.org\n"
-"POT-Creation-Date: 2026-09-10 22:49-0615\n"
-"PO-Revision-Date: 2026-09-10 22:49-0615\n"
+"POT-Creation-Date: 2026-09-11 13:29-0615\n"
+"PO-Revision-Date: 2026-09-11 13:29-0615\n"
 "Last-Translator: dev@gruporeal.org\n"
 "Language-Team: dev@gruporeal.org\n"
 "MIME-Version: 1.0\n"
@@ -129,11 +129,11 @@ msgstr ""
 msgid "Item Proposals"
 msgstr ""
 
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:314
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:316
 msgid "Missing settlement component for {0}."
 msgstr ""
 
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:305
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:307
 msgid "Only one row can override {0}."
 msgstr ""
 
@@ -143,9 +143,16 @@ msgstr ""
 msgid "Override"
 msgstr ""
 
+#. Title of a Workspace Sidebar
+#: grupo_real_tools/workspace_sidebar/payment_settlement.json
+msgid "Payment Settlement"
+msgstr ""
+
 #. Name of a DocType
+#. Label of a Workspace Sidebar Item
 #: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.json
 #: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:53
+#: grupo_real_tools/workspace_sidebar/payment_settlement.json
 msgid "Payment Settlement Entry"
 msgstr ""
 
@@ -165,7 +172,9 @@ msgid "Payment Settlement Entry Reference"
 msgstr ""
 
 #. Name of a DocType
+#. Label of a Workspace Sidebar Item
 #: grupo_real_tools/payment_settlement/doctype/payment_settlement_template/payment_settlement_template.json
+#: grupo_real_tools/workspace_sidebar/payment_settlement.json
 msgid "Payment Settlement Template"
 msgstr ""
 
@@ -211,16 +220,16 @@ msgstr ""
 msgid "Reference Row Name"
 msgstr ""
 
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:338
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:340
 msgid "Row {0}: Apply To does not belong to this settlement."
 msgstr ""
 
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:316
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:351
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:318
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:353
 msgid "Row {0}: a valid exchange rate is required."
 msgstr ""
 
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:344
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:346
 msgid "Row {0}: select Apply To because the settlement has multiple destinations."
 msgstr ""
 
@@ -274,11 +283,11 @@ msgstr ""
 msgid "Subtotal"
 msgstr ""
 
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:75
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:76
 msgid "The Journal Entry calculates different amounts for {0}. Check the exchange rate and precision."
 msgstr ""
 
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:88
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:89
 msgid "The linked Journal Entry is neither submitted nor cancelled."
 msgstr ""
 
@@ -302,7 +311,7 @@ msgstr ""
 msgid "Transporter Invoice No"
 msgstr ""
 
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:229
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:231
 msgid "{0} was already settled in {1}."
 msgstr ""
 
