@@ -51,13 +51,14 @@
   },
   {
    "columns": 1,
+   "depends_on": "eval:doc.calculation_method != \"Manual\"",
    "fieldname": "rate",
    "fieldtype": "Percent",
    "in_list_view": 1,
    "label": "Rate",
+   "mandatory_depends_on": "eval:doc.calculation_method != \"Manual\"",
    "non_negative": 1,
-   "precision": "2",
-   "reqd": 1
+   "precision": "2"
   },
   {
    "columns": 1,
@@ -208,7 +209,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-09-10 11:58:08.062363",
+ "modified": "2026-09-10 22:48:10.931598",
  "modified_by": "Administrator",
  "module": "Payment Settlement",
  "name": "Payment Settlement Entry Component",

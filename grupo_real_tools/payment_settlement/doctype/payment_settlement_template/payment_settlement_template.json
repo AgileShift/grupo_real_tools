@@ -45,7 +45,7 @@
   {
    "fieldname": "components",
    "fieldtype": "Table",
-   "label": "Payment Settlement Template Component",
+   "label": "Components",
    "options": "Payment Settlement Template Component",
    "reqd": 1
   },
@@ -56,7 +56,7 @@
   {
    "fieldname": "accounts",
    "fieldtype": "Table",
-   "label": "Payment Settlement Template Account",
+   "label": "Accounts",
    "options": "Payment Settlement Template Account",
    "reqd": 1
   }
@@ -70,7 +70,7 @@
    "link_fieldname": "payment_settlement_template"
   }
  ],
- "modified": "2026-08-12 10:24:12.795978",
+ "modified": "2026-09-10 21:31:04.044267",
  "modified_by": "Administrator",
  "module": "Payment Settlement",
  "name": "Payment Settlement Template",
