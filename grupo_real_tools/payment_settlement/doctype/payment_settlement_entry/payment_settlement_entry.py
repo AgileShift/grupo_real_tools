@@ -1,8 +1,9 @@
 import frappe
+from erpnext.setup.utils import get_exchange_rate
+from frappe import _
 from frappe.model.document import Document
 from frappe.query_builder.custom import ConstantColumn
 from frappe.utils import flt, getdate
-from erpnext.setup.utils import get_exchange_rate
 
 
 class PaymentSettlementEntry(Document):
@@ -32,98 +33,59 @@ class PaymentSettlementEntry(Document):
 	# end: auto-generated types
 
 	def validate(self):
+		# _validate_links() -> Any submittable link(in doc or children) throws invalid if canceled
 		self.calculate()
 
 	def before_submit(self):
-		if not self.references:
-			frappe.throw('Agrega referencias antes de confirmar el settlement.')
+		self._validate_settled_references()
+
 		if self.difference:
-			frappe.throw('La diferencia debe ser cero antes de confirmar el settlement.')
-		self._validate_settlement_references()
+			frappe.throw(_('Total Debit must be equal to Total Credit. The difference is {0}').format(self.difference))
 
 	def on_submit(self):
-		company = frappe.get_cached_doc('Company', self.company)
-		journal = frappe.new_doc('Journal Entry')
-		journal.company = self.company
-		journal.posting_date = self.posting_date
-		journal.voucher_type = 'Journal Entry'
-		journal.multi_currency = 1
-		journal.user_remark = f'Payment Settlement Entry: {self.name}'
+		journal = frappe.new_doc(
+			'Journal Entry',
+			company=self.company,
+			posting_date=self.posting_date,
+			voucher_type='Journal Entry',
+			multi_currency=True,
+			custom_remark=True,
+			remark=_('Payment Settlement Entry') + f': {self.name}',
+		)
 
 		for component in self.components:
 			if not (component.debit_in_account_currency or component.credit_in_account_currency):
-				continue
+				continue  # Skip Empty Components
+
 			journal.append('accounts', {
 				'account': component.account,
-				'account_currency': component.account_currency,
 				'exchange_rate': component.exchange_rate,
 				'debit_in_account_currency': component.debit_in_account_currency,
 				'credit_in_account_currency': component.credit_in_account_currency,
-				'cost_center': (
-					company.round_off_cost_center or company.cost_center
-					if component.account == company.round_off_account else company.cost_center
-				),
 				'user_remark': component.user_remark,
 			})
-
 		journal.insert()
+
 		# ERPNext recalculates its own amounts; do not post a different closure silently.
 		for component, row in zip(
-			[c for c in self.components if c.debit_in_account_currency or c.credit_in_account_currency],
-			journal.accounts,
+			[c for c in self.components if c.debit_in_account_currency or c.credit_in_account_currency], journal.accounts,
 		):
 			if row.debit != component.debit or row.credit != component.credit:
-				frappe.throw(f'El Journal Entry calcula montos distintos para {component.account}. Revisa la tasa y precisión.')
-		# Keep the JE and settlement in one transaction, including large journals.
-		journal._submit()
+				frappe.throw(
+					_('The Journal Entry calculates different amounts for {0}. Check the exchange rate and precision.')
+					.format(component.account)
+				)
+
+		journal.submit()
 		self.db_set('journal_entry', journal.name)
 
 	def on_cancel(self):
 		if self.journal_entry:
 			journal = frappe.get_doc('Journal Entry', self.journal_entry)
 			if journal.docstatus == 1:
-				journal._cancel()
+				journal.cancel()
 			elif journal.docstatus != 2:
-				frappe.throw('El Journal Entry asociado no está confirmado ni cancelado.')
-
-	@staticmethod
-	def _reference_key(reference):
-		return (reference.reference_doctype, reference.reference_name, reference.reference_row_name or '')
-
-	def _validate_settlement_references(self):
-		# Serialize submissions for this company until the surrounding transaction ends.
-		frappe.db.get_value('Company', self.company, 'name', for_update=True)
-		seen = set()
-		for reference in sorted(self.references, key=self._reference_key):
-			key = self._reference_key(reference)
-			if key in seen:
-				frappe.throw(f'Referencia duplicada en este cierre: {reference.reference_name}.')
-			seen.add(key)
-			if reference.reference_doctype not in ('Sales Invoice', 'Payment Entry'):
-				frappe.throw('Tipo de referencia no soportado.')
-			status = frappe.db.get_value(
-				reference.reference_doctype, reference.reference_name, 'docstatus', for_update=True
-			)
-			if status != 1:
-				frappe.throw(f'La referencia {reference.reference_name} ya no está confirmada.')
-			filters = {
-				'reference_doctype': reference.reference_doctype,
-				'reference_name': reference.reference_name,
-				'docstatus': 1,
-				'parent': ['!=', self.name],
-				'parenttype': self.doctype,
-			}
-			if reference.reference_doctype == 'Sales Invoice':
-				if not reference.reference_row_name:
-					frappe.throw('La referencia Sales Invoice necesita su fila de pago.')
-				filters['reference_row_name'] = reference.reference_row_name
-			elif reference.reference_row_name:
-				frappe.throw('Payment Entry no debe tener una fila de pago de factura.')
-			previous = frappe.db.get_value(
-				'Payment Settlement Entry Reference', filters, 'parent', for_update=True
-			)
-			if previous:
-				frappe.throw(f'{reference.reference_name} ya fue liquidada en {previous}.')
+				frappe.throw(_('The linked Journal Entry is neither submitted nor cancelled.'))
 
 	@property
 	def difference(self):
@@ -133,19 +95,19 @@ class PaymentSettlementEntry(Document):
 	def make_difference(self, adjustment_type: str):
 		account_fields = {
 			'Round Off': 'round_off_account',
-			'Exchange Gain or Loss': 'exchange_gain_loss_account',
+			'Exchange Gain Or Loss': 'exchange_gain_loss_account',
 			'Write Off': 'write_off_account',
 		}
 
 		if adjustment_type not in account_fields:
-			frappe.throw('Tipo de ajuste inválido.')
+			frappe.throw(_('Invalid Option'))
 
 		self.calculate()
 		if not self.difference:
 			return
 
 		if not (account := frappe.get_cached_value('Company', self.company, account_fields[adjustment_type])):
-			frappe.throw(f'Configura la cuenta de {adjustment_type} en Company.')
+			frappe.throw(_("Please set '{0}' in Company: {1}").format(adjustment_type, self.company))
 
 		self.append('components', {
 			'type': 'Adjustment',
@@ -212,14 +174,20 @@ class PaymentSettlementEntry(Document):
 			references.extend(self._get_payment_entry_references(account, from_date, to_date))
 			references.extend(self._get_sales_invoice_payment_references(account, from_date, to_date))
 
+		candidate_names = {row.reference_name for row in references}
 		settled = {
-			self._reference_key(row) for row in frappe.get_all(
+			(row.reference_doctype, row.reference_name, row.reference_row_name or '')
+			for row in frappe.get_all(
 				'Payment Settlement Entry Reference',
-				filters={'docstatus': 1, 'parenttype': self.doctype},
-				fields=['reference_doctype', 'reference_name', 'reference_row_name'],
+				filters={'docstatus': 1, 'parenttype': self.doctype, 'reference_name': ['in', candidate_names]},
+				fields=['reference_doctype', 'reference_name', 'reference_row_name']
 			)
-		}
-		self.set('references', [row for row in references if self._reference_key(row) not in settled])
+		} if candidate_names else set()  # Query only matching References
+
+		self.set('references', [
+			row for row in references
+			if (row.reference_doctype, row.reference_name, row.reference_row_name or '') not in settled
+		])
 		self.calculate()
 
 	@frappe.whitelist(allow_guest=False)
@@ -231,6 +199,37 @@ class PaymentSettlementEntry(Document):
 		# Calculate doc totals
 		self.total_debit = flt(sum(row.debit for row in self.components), self.precision('total_debit'))
 		self.total_credit = flt(sum(row.credit for row in self.components), self.precision('total_credit'))
+
+	def _validate_settled_references(self):
+		reference_keys = {(
+			reference.reference_doctype,
+			reference.reference_name,
+			reference.reference_row_name or '',
+		) for reference in self.references}
+
+		settled_references = frappe.db.get_all(
+			'Payment Settlement Entry Reference',
+			filters={
+				'reference_name': ['in', {reference.reference_name for reference in self.references}],
+				'docstatus': 1,
+				'parent': ['!=', self.name], 'parenttype': self.doctype,
+			},
+			fields=['reference_doctype', 'reference_name', 'reference_row_name', 'parent'],
+		)
+
+		for reference in settled_references:
+			key = (
+				reference.reference_doctype,
+				reference.reference_name,
+				reference.reference_row_name or '',
+			)
+
+			if key in reference_keys:
+				frappe.throw(
+					_('{0} was already settled in {1}.').format(
+						reference.reference_name, reference.parent
+					)
+				)
 
 	def _calculate_clearing_components(self):
 		for account in self.accounts:
@@ -278,7 +277,8 @@ class PaymentSettlementEntry(Document):
 			# Calculate internal component values
 			self._calculate_component_base_amounts(component)
 
-	def _calculate_component_base_amounts(self, component):
+	@staticmethod
+	def _calculate_component_base_amounts(component):
 		component.debit_in_account_currency = flt(
 			component.debit_in_account_currency, component.precision('debit_in_account_currency')
 		)
@@ -302,7 +302,7 @@ class PaymentSettlementEntry(Document):
 				if component.override:
 					previous = settlement_components.get(component.account)
 					if previous and previous.override:
-						frappe.throw(f'Solo una fila puede tener Override para {component.account}.')
+						frappe.throw(_('Only one row can override {0}.').format(component.account))
 					settlement_components[component.account] = component
 				else:
 					settlement_components.setdefault(component.account, component)
@@ -311,9 +311,9 @@ class PaymentSettlementEntry(Document):
 			clearing_accounts[account.clearing_account] = account.settlement_account
 			settlement = settlement_components.get(account.settlement_account)
 			if not settlement:
-				frappe.throw(f'Falta el componente de settlement para {account.settlement_account}.')
+				frappe.throw(_('Missing settlement component for {0}.').format(account.settlement_account))
 			if not settlement.exchange_rate or settlement.exchange_rate <= 0:
-				frappe.throw(f'Fila {settlement.idx}: falta una tasa de cambio válida.')
+				frappe.throw(_('Row {0}: a valid exchange rate is required.').format(settlement.idx))
 
 			# Keep the operational balance in the destination account currency.
 			if account.clearing_account_currency == settlement.account_currency:
@@ -334,19 +334,21 @@ class PaymentSettlementEntry(Document):
 			if component.apply_to:
 				settlement_account = clearing_accounts.get(component.apply_to)
 				if not settlement_account:
-					frappe.throw(f'Fila {component.idx}: Apply To no pertenece a este cierre.')
+					frappe.throw(
+						_('Row {0}: Apply To does not belong to this settlement.').format(component.idx)
+					)
 			elif len(settlements) == 1:
 				settlement_account = next(iter(settlements))
 			else:
 				frappe.throw(
-					f'Fila {component.idx}: selecciona Apply To; '
-					'el cierre tiene varios destinos.'
+					_('Row {0}: select Apply To because the settlement has multiple destinations.')
+					.format(component.idx)
 				)
 
 			settlement = settlement_components[settlement_account]
 			if component.account_currency != settlement.account_currency:
 				if not component.exchange_rate or component.exchange_rate <= 0:
-					frappe.throw(f'Fila {component.idx}: falta una tasa de cambio válida.')
+					frappe.throw(_('Row {0}: a valid exchange rate is required.').format(component.idx))
 				adjustment = (component.debit - component.credit) / settlement.exchange_rate
 
 			settlements[settlement_account] -= adjustment
@@ -437,3 +439,4 @@ class PaymentSettlementEntry(Document):
 		)
 
 		return references.run(as_dict=True)
+ # 464 -> i18n plus _validate_links(self) | 8 19
