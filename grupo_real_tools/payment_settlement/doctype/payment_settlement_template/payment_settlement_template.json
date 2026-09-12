@@ -67,10 +67,10 @@
  "links": [
   {
    "link_doctype": "Payment Settlement Entry",
-   "link_fieldname": "payment_settlement_template"
+   "link_fieldname": "template"
   }
  ],
- "modified": "2026-09-10 21:31:04.044267",
+ "modified": "2026-09-12 07:16:16.268085",
  "modified_by": "Administrator",
  "module": "Payment Settlement",
  "name": "Payment Settlement Template",
