@@ -24,6 +24,7 @@ class PaymentSettlementEntry(Document):
 		components: DF.Table[PaymentSettlementEntryComponent]
 		from_date: DF.Datetime
 		journal_entry: DF.Link | None
+		naming_series: DF.Literal["PS-.YYYY.-.#####"]
 		posting_date: DF.Date
 		references: DF.Table[PaymentSettlementEntryReference]
 		template: DF.Link

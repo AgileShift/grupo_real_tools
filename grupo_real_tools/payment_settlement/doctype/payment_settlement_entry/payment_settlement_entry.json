@@ -1,16 +1,16 @@
 {
  "actions": [],
  "allow_bulk_edit": 1,
- "allow_rename": 1,
- "autoname": "hash",
+ "autoname": "naming_series:",
  "creation": "2026-02-26 12:57:05.899402",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
   "section_break_yhwp",
-  "amended_from",
   "company",
   "template",
+  "amended_from",
+  "naming_series",
   "column_break_ycpr",
   "posting_date",
   "journal_entry",
@@ -38,6 +38,7 @@
   {
    "fieldname": "amended_from",
    "fieldtype": "Link",
+   "ignore_user_permissions": 1,
    "label": "Amended From",
    "no_copy": 1,
    "options": "Payment Settlement Entry",
@@ -184,20 +185,31 @@
    "no_copy": 1,
    "options": "Journal Entry",
    "read_only": 1
+  },
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "no_copy": 1,
+   "options": "PS-.YYYY.-.#####",
+   "print_hide": 1,
+   "reqd": 1,
+   "set_only_once": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-09-10 21:31:45.674639",
+ "modified": "2026-09-12 10:32:08.017592",
  "modified_by": "Administrator",
  "module": "Payment Settlement",
  "name": "Payment Settlement Entry",
- "naming_rule": "Random",
+ "naming_rule": "By \"Naming Series\" field",
  "owner": "Administrator",
  "permissions": [
   {
+   "cancel": 1,
    "create": 1,
    "delete": 1,
    "email": 1,
@@ -205,10 +217,33 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "System Manager",
+   "role": "Accounts User",
    "share": 1,
    "submit": 1,
    "write": 1
+  },
+  {
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Auditor",
+   "share": 1
   }
  ],
  "row_format": "Dynamic",

@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Grupo Real Tools VERSION\n"
 "Report-Msgid-Bugs-To: dev@gruporeal.org\n"
-"POT-Creation-Date: 2026-09-11 13:29-0745\n"
-"PO-Revision-Date: 2026-09-10 18:07-2215\n"
+"POT-Creation-Date: 2026-09-12 10:58-0745\n"
+"PO-Revision-Date: 2026-09-10 18:07-2345\n"
 "Last-Translator: dev@gruporeal.org\n"
 "Language: es\n"
 "Language-Team: dev@gruporeal.org\n"
@@ -127,11 +127,11 @@ msgstr "Monto fijo"
 msgid "Item Proposals"
 msgstr ""
 
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:316
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:317
 msgid "Missing settlement component for {0}."
 msgstr "Falta el componente de liquidación para {0}."
 
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:307
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:308
 msgid "Only one row can override {0}."
 msgstr "Solo una fila puede sobrescribir {0}."
 
@@ -149,7 +149,7 @@ msgstr "Liquidaciones de pagos"
 #. Name of a DocType
 #. Label of a Workspace Sidebar Item
 #: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.json
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:53
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:54
 #: grupo_real_tools/workspace_sidebar/payment_settlement.json
 msgid "Payment Settlement Entry"
 msgstr "Liquidación de pagos"
@@ -218,16 +218,16 @@ msgstr ""
 msgid "Reference Row Name"
 msgstr "ID de fila de referencia"
 
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:340
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:341
 msgid "Row {0}: Apply To does not belong to this settlement."
 msgstr "Fila {0}: Aplicar a no pertenece a esta liquidación."
 
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:318
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:353
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:319
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:354
 msgid "Row {0}: a valid exchange rate is required."
 msgstr "Fila {0}: se requiere una tasa de cambio válida."
 
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:346
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:347
 msgid "Row {0}: select Apply To because the settlement has multiple destinations."
 msgstr "Fila {0}: seleccione Aplicar a porque la liquidación tiene varios destinos."
 
@@ -279,11 +279,11 @@ msgstr ""
 msgid "Subtotal"
 msgstr ""
 
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:76
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:77
 msgid "The Journal Entry calculates different amounts for {0}. Check the exchange rate and precision."
 msgstr "El asiento contable calcula montos diferentes para {0}. Revise la tasa de cambio y la precisión."
 
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:89
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:90
 msgid "The linked Journal Entry is neither submitted nor cancelled."
 msgstr "El asiento contable vinculado no está confirmado ni cancelado."
 
@@ -307,7 +307,7 @@ msgstr ""
 msgid "Transporter Invoice No"
 msgstr ""
 
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:231
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:232
 msgid "{0} was already settled in {1}."
 msgstr "{0} ya se liquidó en {1}."
 
