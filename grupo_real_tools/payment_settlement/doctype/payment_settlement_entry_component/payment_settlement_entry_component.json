@@ -62,6 +62,7 @@
   },
   {
    "columns": 1,
+   "depends_on": "eval:doc.account_currency != frappe.get_doc(\":Company\", parent.company)?.default_currency",
    "fieldname": "debit",
    "fieldtype": "Currency",
    "label": "Debit in Company Currency",
@@ -72,6 +73,7 @@
   },
   {
    "columns": 1,
+   "depends_on": "eval:doc.account_currency != frappe.get_doc(\":Company\", parent.company)?.default_currency",
    "fieldname": "credit",
    "fieldtype": "Currency",
    "label": "Credit in Company Currency",
@@ -170,6 +172,7 @@
   },
   {
    "columns": 1,
+   "depends_on": "eval:doc.account_currency != frappe.get_doc(\":Company\", parent.company)?.default_currency",
    "fieldname": "exchange_rate",
    "fieldtype": "Float",
    "in_list_view": 1,
@@ -209,7 +212,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-09-10 22:48:10.931598",
+ "modified": "2026-09-21 17:05:22.232464",
  "modified_by": "Administrator",
  "module": "Payment Settlement",
  "name": "Payment Settlement Entry Component",

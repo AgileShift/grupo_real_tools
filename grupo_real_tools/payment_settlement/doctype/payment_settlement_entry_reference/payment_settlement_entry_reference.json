@@ -119,6 +119,7 @@
   {
    "alignment": "Center",
    "columns": 1,
+   "depends_on": "eval:doc.currency != frappe.get_doc(\":Company\", parent.company)?.default_currency",
    "fieldname": "base_amount",
    "fieldtype": "Currency",
    "in_list_view": 1,
@@ -165,6 +166,7 @@
   {
    "alignment": "Center",
    "columns": 1,
+   "depends_on": "eval:doc.currency != frappe.get_doc(\":Company\", parent.company)?.default_currency",
    "fieldname": "exchange_rate",
    "fieldtype": "Float",
    "in_list_view": 1,
@@ -179,7 +181,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-09-10 20:36:01.065027",
+ "modified": "2026-09-21 16:52:34.047115",
  "modified_by": "Administrator",
  "module": "Payment Settlement",
  "name": "Payment Settlement Entry Reference",
