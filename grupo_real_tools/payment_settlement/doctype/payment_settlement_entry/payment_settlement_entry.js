@@ -50,7 +50,7 @@ frappe.ui.form.on("Payment Settlement Entry", {
 					'Write Off'
 				]
 			},
-			({adjustment_type}) => frm.call('make_difference', {adjustment_type}),
+			({adjustment_type}) => frm.call('make_difference', {adjustment_type}).then(() => frm.dirty()),
 			__('Make Difference Entry'),
 			__('Apply')
 		);
@@ -69,6 +69,15 @@ frappe.ui.form.on("Payment Settlement Entry", {
 
 frappe.ui.form.on('Payment Settlement Entry Reference', {
 	references_remove(frm) {
+		return frm.call('calculate');
+	},
+});
+
+frappe.ui.form.on('Payment Settlement Entry Component', {
+	exchange_rate(frm) {
+		return frm.call('calculate');
+	},
+	components_remove(frm) {
 		return frm.call('calculate');
 	},
 });
