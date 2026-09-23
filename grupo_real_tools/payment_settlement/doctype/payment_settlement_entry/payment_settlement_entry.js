@@ -1,9 +1,11 @@
 frappe.ui.form.on("Payment Settlement Entry", {
 	setup(frm) {
-		frm.page.sidebar.toggle(false); // Hide Sidebar
+		frm.page.sidebar.toggle(false);
 
+		// References are fetched from the backend, not added manually.
 		frm.set_df_property('references', 'cannot_add_rows', true);
 
+		// Apply To selects the clearing account whose settlement absorbs this component.
 		frm.set_query('apply_to', 'components', (doc) => ({
 			filters: {
 				name: ['in', (doc.accounts || []).map((row) => row.clearing_account).filter(Boolean)]
@@ -12,7 +14,7 @@ frappe.ui.form.on("Payment Settlement Entry", {
 	},
 
 	refresh(frm) {
-		if (frm.is_new())
+		if (frm.is_new() || frm.doc.docstatus !== 0)
 			return;
 
 		frm.add_custom_button(__('Get Entries'), () => {
@@ -21,10 +23,12 @@ frappe.ui.form.on("Payment Settlement Entry", {
 	},
 
 	company(frm) {
+		// Clearing the Template also resets the rows copied from its previous company.
 		frm.set_value('template', '');
 	},
 
 	template(frm) {
+		// The Template replaces account and component rows; reload references for those mappings.
 		return frm.call('fetch_template_data').then(() => {
 			frm.events.fetch_references(frm);
 		});
@@ -39,6 +43,7 @@ frappe.ui.form.on("Payment Settlement Entry", {
 	},
 
 	make_difference(frm) {
+		// The server appends the adjustment row; mark the form dirty so it can be saved.
 		frappe.prompt({
 				fieldname: 'adjustment_type',
 				fieldtype: 'Select',
@@ -56,8 +61,8 @@ frappe.ui.form.on("Payment Settlement Entry", {
 		);
 	},
 
-	// Custom Functions
 	fetch_references(frm) {
+		// Incomplete filters invalidate current references; clear them and recalculate.
 		if (!frm.doc.from_date || !frm.doc.to_date || !frm.doc.template || !frm.doc.accounts?.length) {
 			frm.clear_table('references');
 			return frm.call('calculate');
@@ -74,10 +79,18 @@ frappe.ui.form.on('Payment Settlement Entry Reference', {
 });
 
 frappe.ui.form.on('Payment Settlement Entry Component', {
-	exchange_rate(frm) {
-		return frm.call('calculate');
+	before_components_remove(frm, cdt, cdn) {
+		const row = locals[cdt][cdn];
+
+		if (['Clearing', 'Settlement'].includes(row.type)) {
+			frappe.throw(__('Cannot delete {0}', [`${__(row.type)}: ${row.account}`]));
+		}
 	},
 	components_remove(frm) {
+		return frm.call('calculate');
+	},
+	exchange_rate(frm) {
+		// Recalculate base amounts and settlement residuals after a rate change.
 		return frm.call('calculate');
 	},
 });
