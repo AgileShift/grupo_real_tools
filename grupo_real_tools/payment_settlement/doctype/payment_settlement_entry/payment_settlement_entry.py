@@ -89,6 +89,19 @@ class PaymentSettlementEntry(Document):
 			elif journal.docstatus != 2:
 				frappe.throw(_('The linked Journal Entry is neither submitted nor cancelled.'))
 
+	def on_trash(self):
+		if self.journal_entry and not frappe.get_single_value('Accounts Settings', 'delete_linked_ledger_entries'):
+			frappe.throw(
+				_('Please enable {0} in the {1}.').format(
+					_('Delete Accounting and Stock Ledger entries on deletion of transaction'),
+					_('Accounts Settings'),
+				)
+			)
+
+	def after_delete(self):
+		if self.journal_entry:
+			frappe.delete_doc('Journal Entry', self.journal_entry, ignore_missing=False)
+
 	@property
 	def difference(self):
 		return flt(self.total_debit - self.total_credit, self.precision('difference'))
@@ -195,6 +208,7 @@ class PaymentSettlementEntry(Document):
 
 	@frappe.whitelist(allow_guest=False)
 	def calculate(self):
+		self._validate_required_components()
 		self._calculate_clearing_components()
 		self._set_component_exchange_rates()
 		self._calculate_settlement_components()
@@ -202,6 +216,16 @@ class PaymentSettlementEntry(Document):
 		# Calculate doc totals
 		self.total_debit = flt(sum(row.debit for row in self.components), self.precision('total_debit'))
 		self.total_credit = flt(sum(row.credit for row in self.components), self.precision('total_credit'))
+
+	def _validate_required_components(self):
+		present = {(component.type, component.account) for component in self.components}
+
+		for account in self.accounts:
+			if ('Clearing', account.clearing_account) not in present:
+				frappe.throw(_('Missing clearing component for {0}.').format(account.clearing_account))
+
+			if ('Settlement', account.settlement_account) not in present:
+				frappe.throw(_('Missing settlement component for {0}.').format(account.settlement_account))
 
 	def _validate_settled_references(self):
 		reference_keys = {(
@@ -313,8 +337,7 @@ class PaymentSettlementEntry(Document):
 		for account in self.accounts:
 			clearing_accounts[account.clearing_account] = account.settlement_account
 			settlement = settlement_components.get(account.settlement_account)
-			if not settlement:
-				frappe.throw(_('Missing settlement component for {0}.').format(account.settlement_account))
+
 			if not settlement.exchange_rate or settlement.exchange_rate <= 0:
 				frappe.throw(_('Row {0}: a valid exchange rate is required.').format(settlement.idx))
 
@@ -442,4 +465,3 @@ class PaymentSettlementEntry(Document):
 		)
 
 		return references.run(as_dict=True)
- # 464 -> i18n plus _validate_links(self) | 8 19
