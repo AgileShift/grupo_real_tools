@@ -18,7 +18,8 @@ frappe.ui.form.on("Payment Settlement Entry", {
 			return;
 
 		frm.add_custom_button(__('Get Entries'), () => {
-			frm.events.fetch_references(frm);
+			// The server replaces the references; mark the form dirty so they can be saved.
+			return frm.events.fetch_references(frm).then(() => frm.dirty());
 		});
 	},
 
@@ -86,11 +87,8 @@ frappe.ui.form.on('Payment Settlement Entry Component', {
 			frappe.throw(__('Cannot delete {0}', [`${__(row.type)}: ${row.account}`]));
 		}
 	},
-	components_remove(frm) {
-		return frm.call('calculate');
-	},
+	components_remove: frappe.utils.debounce((frm) => frm.call('calculate'), 250), // Bulk delete fires once per row; recalculate after the grid settles.
 	exchange_rate(frm) {
-		// Recalculate base amounts and settlement residuals after a rate change.
-		return frm.call('calculate');
+		return frm.call('calculate'); // Recalculate base amounts and settlement residuals after a rate change.
 	},
 });
