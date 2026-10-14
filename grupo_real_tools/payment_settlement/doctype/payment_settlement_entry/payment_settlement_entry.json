@@ -1,12 +1,10 @@
 {
  "actions": [],
- "allow_bulk_edit": 1,
  "autoname": "naming_series:",
  "creation": "2026-02-26 12:57:05.899402",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "section_break_yhwp",
   "company",
   "template",
   "amended_from",
@@ -31,10 +29,6 @@
   "make_difference"
  ],
  "fields": [
-  {
-   "fieldname": "section_break_yhwp",
-   "fieldtype": "Section Break"
-  },
   {
    "fieldname": "amended_from",
    "fieldtype": "Link",
@@ -197,11 +191,9 @@
    "set_only_once": 1
   }
  ],
- "grid_page_length": 50,
- "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-09-21 17:07:16.743922",
+ "modified": "2026-10-14 16:42:17.559255",
  "modified_by": "Administrator",
  "module": "Payment Settlement",
  "name": "Payment Settlement Entry",
@@ -246,11 +238,10 @@
    "share": 1
   }
  ],
+ "protect_attached_files": 1,
  "row_format": "Dynamic",
- "rows_threshold_for_grid_search": 20,
  "sort_field": "creation",
  "sort_order": "DESC",
  "states": [],
- "track_changes": 1,
- "track_seen": 1
+ "track_changes": 1
 }

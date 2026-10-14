@@ -129,10 +129,9 @@
   }
  ],
  "grid_page_length": 50,
- "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-09-21 16:48:43.397082",
+ "modified": "2026-10-14 16:50:24.750920",
  "modified_by": "Administrator",
  "module": "Payment Settlement",
  "name": "Payment Settlement Entry Account",
@@ -140,7 +139,6 @@
  "permissions": [],
  "row_format": "Dynamic",
  "rows_threshold_for_grid_search": 20,
- "sort_field": "creation",
  "sort_order": "DESC",
  "states": []
 }
