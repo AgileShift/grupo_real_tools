@@ -1,6 +1,6 @@
 # Layaway
 
-## Purpose
+## Purpose and scope
 
 The Layaway module will manage the lifecycle of merchandise reservations,
 partial payments, inventory reservation, expiration, completion, and
@@ -10,7 +10,12 @@ Development is intentionally incremental. This document describes the intended
 architecture and the currently authorized first phase; it does not claim that
 future-phase behavior is already implemented.
 
-## Business context
+## Implemented behavior
+
+This README does not claim that Layaway workflows are implemented. It records
+the intended architecture, target rules, and authorized Phase 1 scope.
+
+## Target business rules
 
 The current business rules are:
 
@@ -262,3 +267,7 @@ Phase 1 is complete when:
 - structural tests pass;
 - no ERPNext transactional automation or Layaway business logic has been
   introduced.
+
+## Technical documentation
+
+Read [AGENTS.md](AGENTS.md) for phase boundaries, module-specific rules, and required verification.

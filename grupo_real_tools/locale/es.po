@@ -22,7 +22,7 @@ msgstr ""
 #. 'Procurement'
 #: grupo_real_tools/procurement/doctype/procurement/procurement.json
 msgid "AIR"
-msgstr ""
+msgstr "AÉREO"
 
 #. Option for the 'Type' (Select) field in DocType 'Payment Settlement Entry
 #. Component'
@@ -33,7 +33,7 @@ msgstr "Ajuste"
 #. Label of the attributes (Data) field in DocType 'Procurement Item Proposal'
 #: grupo_real_tools/procurement/doctype/procurement_item_proposal/procurement_item_proposal.json
 msgid "Attribute Values"
-msgstr ""
+msgstr "Valores de atributos"
 
 #. Label of the attributes_json (JSON) field in DocType 'Procurement Item'
 #. Label of the attributes_json (JSON) field in DocType 'Procurement Item
@@ -41,7 +41,7 @@ msgstr ""
 #: grupo_real_tools/procurement/doctype/procurement_item/procurement_item.json
 #: grupo_real_tools/procurement/doctype/procurement_item_proposal/procurement_item_proposal.json
 msgid "Attributes JSON"
-msgstr ""
+msgstr "JSON de atributos"
 
 #. Label of the calculation_method (Select) field in DocType 'Payment
 #. Settlement Entry Component'
@@ -100,7 +100,7 @@ msgstr "Referencias a liquidar"
 #. Label of the configure_item_btn (Button) field in DocType 'Procurement Item'
 #: grupo_real_tools/procurement/doctype/procurement_item/procurement_item.json
 msgid "Configure Item"
-msgstr ""
+msgstr "Configurar artículo"
 
 #. Label of the credit_in_account_currency (Currency) field in DocType 'Payment
 #. Settlement Entry Component'
@@ -125,7 +125,7 @@ msgstr "Monto fijo"
 #. Label of the item_proposals (Table) field in DocType 'Procurement'
 #: grupo_real_tools/procurement/doctype/procurement/procurement.json
 msgid "Item Proposals"
-msgstr ""
+msgstr "Propuestas de artículos"
 
 #: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:317
 msgid "Missing settlement component for {0}."
@@ -189,28 +189,28 @@ msgstr "Componente de plantilla de liquidación de pagos"
 #. Name of a DocType
 #: grupo_real_tools/procurement/doctype/procurement_item/procurement_item.json
 msgid "Procurement Item"
-msgstr ""
+msgstr "Artículo de compra"
 
 #. Name of a DocType
 #: grupo_real_tools/procurement/doctype/procurement_item_proposal/procurement_item_proposal.json
 msgid "Procurement Item Proposal"
-msgstr ""
+msgstr "Propuesta de artículo de compra"
 
 #. Label of the item_code (Data) field in DocType 'Procurement Item Proposal'
 #: grupo_real_tools/procurement/doctype/procurement_item_proposal/procurement_item_proposal.json
 msgid "Proposed Item Code"
-msgstr ""
+msgstr "Código de artículo propuesto"
 
 #. Label of the item_name (Data) field in DocType 'Procurement Item Proposal'
 #: grupo_real_tools/procurement/doctype/procurement_item_proposal/procurement_item_proposal.json
 msgid "Proposed Item Name"
-msgstr ""
+msgstr "Nombre de artículo propuesto"
 
 #. Label of the purchase_rate (Currency) field in DocType 'Procurement Item
 #. Proposal'
 #: grupo_real_tools/procurement/doctype/procurement_item_proposal/procurement_item_proposal.json
 msgid "Purchase Rate"
-msgstr ""
+msgstr "Precio de compra"
 
 #. Label of the reference_row_name (Data) field in DocType 'Payment Settlement
 #. Entry Reference'
@@ -235,7 +235,7 @@ msgstr "Fila {0}: seleccione Aplicar a porque la liquidación tiene varios desti
 #. 'Procurement'
 #: grupo_real_tools/procurement/doctype/procurement/procurement.json
 msgid "SEA"
-msgstr ""
+msgstr "MARÍTIMO"
 
 #. Option for the 'Type' (Select) field in DocType 'Payment Settlement Entry
 #. Component'
@@ -269,7 +269,7 @@ msgstr "Componentes de liquidación"
 #. Proposal'
 #: grupo_real_tools/procurement/doctype/procurement_item_proposal/procurement_item_proposal.json
 msgid "Source Item Code"
-msgstr ""
+msgstr "Código de artículo fuente"
 
 #. Label of the subtotal (Currency) field in DocType 'Procurement'
 #. Label of the subtotal (Currency) field in DocType 'Procurement Item
@@ -277,7 +277,7 @@ msgstr ""
 #: grupo_real_tools/procurement/doctype/procurement/procurement.json
 #: grupo_real_tools/procurement/doctype/procurement_item_proposal/procurement_item_proposal.json
 msgid "Subtotal"
-msgstr ""
+msgstr "Subtotal"
 
 #: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:77
 msgid "The Journal Entry calculates different amounts for {0}. Check the exchange rate and precision."
@@ -290,24 +290,23 @@ msgstr "El asiento contable vinculado no está confirmado ni cancelado."
 #. Label of the total_qty (Float) field in DocType 'Procurement'
 #: grupo_real_tools/procurement/doctype/procurement/procurement.json
 msgid "Total QTY"
-msgstr ""
+msgstr "Cantidad total"
 
 #. Label of the transportation_method (Select) field in DocType 'Procurement'
 #: grupo_real_tools/procurement/doctype/procurement/procurement.json
 msgid "Transportation Method"
-msgstr ""
+msgstr "Método de transporte"
 
 #. Label of the transporter_invoice_date (Date) field in DocType 'Procurement'
 #: grupo_real_tools/procurement/doctype/procurement/procurement.json
 msgid "Transporter Invoice Date"
-msgstr ""
+msgstr "Fecha de factura del transportista"
 
 #. Label of the transporter_invoice_no (Data) field in DocType 'Procurement'
 #: grupo_real_tools/procurement/doctype/procurement/procurement.json
 msgid "Transporter Invoice No"
-msgstr ""
+msgstr "N.º de factura del transportista"
 
 #: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:232
 msgid "{0} was already settled in {1}."
 msgstr "{0} ya se liquidó en {1}."
-

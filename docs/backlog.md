@@ -1,56 +1,60 @@
-# Modulo Actividades diarias
+# App backlog
 
-Estas son actividades que se requieren realizar todos los dias para garantizar una estabilidad en al modelo de negocio:
+This file records ideas and open decisions for Grupo Real Tools.
 
-La idea es que puede ser una simple table que guarde las actividades a realizarse antes que el sistema sea ‘desbloqueado’ para su uso, estas actividades pueden ser realizadas por cualquiera de los trabajadores
+None of the items below is approved design or implemented behavior.
 
-Algo asi que esto aparezca al principio del dia, como actividades necesarias a realizarse antes de poder entrar al sistema.
+Confirm the business need, scope, owner, and applicable module before starting work.
 
-| Modelo Daily Activity | Modelo DailyActivityHistory |
-|-----------------------|-----------------------------|
-| PK                    | Pk                          |
-| Name: String          | Name: string                |
-| Recurrence: Datetime  | Last completed: datetime    |
-|                       | Completed by: PK User       |
+## Daily activities
 
-## Ejemplos
+### Proposal
 
-- Apertura del dia:
-  - Actualizar la tasa de cambio del dia(BCN)
-  - Apertura de Caja y cuentas de Banco
-  - Anotar gastos del dia anterior y guardar papeleria
-  - Compras del dia anterior
-  - Actualizar WR de IMG al sistema
-  - Revision de paquetes para reportar del dia anterior
-- Cierre del dia
-  - Cierre de caja y cuentas de banco
-  - Anotar gastos del dia y guardar papeleria
-  - Compras del dia
+Consider a daily-activity record and completion history to support operational readiness before users begin routine
+work. Any access restriction, responsible roles, and workflow remain open decisions.
 
----
+| Daily Activity | Daily Activity History |
+|----------------|------------------------|
+| Primary key    | Primary key            |
+| Name           | Name                   |
+| Recurrence     | Last completed         |
+|                | Completed by User      |
 
-# Modulo de reembolsos:
+### Examples to validate
 
-* Para con el cliente
-* Para con el proveedor
+- Day opening:
+  - Update the day's BCN exchange rate.
+  - Open cash and bank accounts.
+  - Record prior-day expenses and retain supporting documents.
+  - Record prior-day purchases.
+  - Update image-related work records in the system.
+  - Review packages that require reporting from the previous day.
+- Day closing:
+  - Close cash and bank accounts.
+  - Record the day's expenses and retain supporting documents.
+  - Record the day's purchases.
 
----
+## Reimbursements
 
-# Modulo de Fuerza Laboral
+Consider separate reimbursement flows for customers and suppliers. Their documents, approvals, accounting treatment,
+and relation to standard ERPNext processes remain undefined.
 
-* Llevar control sobre el horario de entrada y salida
-  * Necesidad de comprar un lector de huella? 
-* Llevar control sobre los dias ausentes
-* Obtener toda la informacion que modifica los salarios base!
-* Calculo automatico de Planilla con Frappe HR
+## Workforce management
 
----
+Potential needs include:
 
-# Flujo de Reporte Administrativo(Muy posible fuera del sistema)
+- recording attendance and departure times;
+- deciding whether a fingerprint reader is needed;
+- recording absences;
+- identifying information that changes base salaries; and
+- evaluating automatic payroll calculation through Frappe HR.
 
-* Facturas Pendientes
-* Ordenes de Importacion Pendientes de Pago
-* Cierres de Caja
-* Charts - Por Verse
-* Notificaciones transactionales via Telegram o Whatsapp:
-  * Definir eventos que que activaran las notificaciones
+## Administrative reporting and notifications
+
+Potential reporting or notification work, possibly through Insights or outside this app:
+
+- outstanding invoices;
+- import orders pending payment;
+- cash closings;
+- charts to define; and
+- transactional Telegram or WhatsApp notifications, including the events that would trigger them.
