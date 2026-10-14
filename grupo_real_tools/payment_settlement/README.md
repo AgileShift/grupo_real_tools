@@ -1,59 +1,66 @@
 # Payment Settlement
 
-## Propósito
+## Purpose and scope
 
-`Payment Settlement` cierra cobros que ya fueron registrados en ERPNext y que permanecen temporalmente en cuentas transitorias. El documento identifica los cobros incluidos, incorpora gastos o movimientos adicionales, calcula el destino residual y genera un `Journal Entry` con trazabilidad.
+`Payment Settlement` closes collection events that have already been recorded
+in ERPNext and remain temporarily held in clearing accounts. The document
+identifies included collections, incorporates expenses or additional movements,
+calculates the residual destination, and creates a traceable `Journal Entry`.
 
-El módulo no cobra facturas ni reemplaza `Payment Entry`. Su responsabilidad comienza después de capturar el dinero:
+The module does not collect invoices and does not replace `Payment Entry`.
+Its responsibility begins after the money has been captured:
 
 ```text
-Cobros registrados
-    → cuentas transitorias (clearing)
-    → liquidación y componentes
-    → cuentas de destino (settlement)
+Recorded collections
+    → clearing accounts
+    → settlement and components
+    → destination accounts
     → Journal Entry
 ```
 
-Casos objetivo del MVP:
+Target MVP cases include:
 
-- liquidaciones de POS y tarjetas;
-- cierres de cajas;
-- liquidaciones de mensajeros y delivery;
-- cierres con varias cuentas y monedas;
-- fondos adicionales provenientes de banco, caja u otra cuenta manual;
-- redondeos, diferencias cambiarias y write-offs controlados.
+- POS and card settlements;
+- cash-register closings;
+- courier and delivery settlements;
+- closings involving several accounts and currencies;
+- additional funds from a bank, cash, or another manual account;
+- controlled rounding, exchange differences, and write-offs.
 
-## Estado actual
+## Implemented behavior and verification status
 
-El flujo **Manual** está implementado y fue probado de forma interactiva, incluyendo:
+The **Manual** flow is implemented and has been tested interactively, including:
 
-- referencias en USD y NIO;
-- varias cuentas transitorias dentro de un solo cierre;
-- componentes aplicados a una cuenta transitoria concreta;
-- destinos bancarios y no bancarios;
-- override manual del monto de liquidación;
-- generación, confirmación y cancelación del `Journal Entry`;
-- propagación de `Bank Account` y `User Remark` al asiento;
-- bloqueo de referencias previamente liquidadas;
-- bloqueo de submit cuando débito y crédito no cuadran.
+- USD and NIO references;
+- several clearing accounts in one settlement;
+- components applied to a specific clearing account;
+- bank and non-bank destinations;
+- manual override of a settlement amount;
+- `Journal Entry` generation, submission, and cancellation;
+- propagation of `Bank Account` and `User Remark` to the journal entry;
+- prevention of previously settled references;
+- prevention of submit when debit and credit do not balance.
 
-`Percentage` y `Fixed Amount` aparecen en los DocTypes, pero su cálculo todavía no está implementado. En el MVP deben considerarse funcionales solamente las líneas `Manual`.
+`Percentage` and `Fixed Amount` appear in the DocTypes, but their calculations
+are not implemented. Only `Manual` lines should be considered functional in the MVP.
 
-Los archivos de pruebas automatizadas todavía son esqueletos vacíos. Las verificaciones actuales han sido manuales y mediante transacciones con rollback.
+The automated test files remain empty scaffolds.
+Current verification has been manual and through rollback transactions.
 
-## Modelo de documentos
+## Document model
 
 ### Payment Settlement Template
 
-Define la receta reutilizable del cierre.
+Defines the reusable settlement recipe.
 
-Contiene:
+It contains:
 
 - `company`;
-- una o varias filas de `Payment Settlement Template Account`;
-- cero o varias filas de `Payment Settlement Template Component`.
+- one or more `Payment Settlement Template Account` rows;
+- zero or more `Payment Settlement Template Component` rows.
 
-Cada fila de cuenta representa un mapeo 1:1:
+Each account row maps one clearing account to one settlement account.
+Several rows may share the same settlement account:
 
 ```text
 Mode of Payment
@@ -61,186 +68,205 @@ Mode of Payment
     → Settlement Account
 ```
 
-Reglas actuales:
+Current rules:
 
-- `Clearing Account` se deriva del `Mode of Payment` para la compañía.
-- Un `Mode of Payment` no debe repetirse dentro del mismo Template.
-- `Bank Account` es opcional.
-- Cuando existe `Bank Account`, su cuenta contable es el `Settlement Account`.
-- Sin `Bank Account`, el destino puede ser una cuenta manual: caja, cuenta por cobrar, wallet u otra cuenta transitoria.
-- Un componente no debe reutilizar una cuenta estructural de clearing o settlement.
-- `Apply To`, cuando se usa, apunta a una `Clearing Account` del mismo Template.
+- `Clearing Account` is derived from the `Mode of Payment` for the company.
+- A `Mode of Payment` must not be repeated within the same Template.
+- `Bank Account` is optional.
+- When a `Bank Account` exists, its ledger account becomes the `Settlement Account`.
+- Without a `Bank Account`, the destination may be a manually selected cash, receivable, wallet, or other clearing
+  account.
+- A component must not reuse a structural clearing or settlement account.
+- When used, `Apply To` points to a `Clearing Account` in the same Template.
 
 ### Payment Settlement Entry
 
-Es el cierre transaccional real. Guarda una fotografía de la configuración utilizada; no depende dinámicamente del Template después de copiarlo.
+Represents the actual transactional closing. It stores a snapshot of the
+configuration used and does not depend dynamically on the Template after it has been copied.
 
-Contiene:
+It contains:
 
-- compañía, Template, fecha contable y rango de búsqueda;
-- tabla de cuentas estructurales;
-- tabla de referencias incluidas;
-- tabla de componentes contables;
-- totales en moneda de la compañía;
-- diferencia calculada;
-- enlace al `Journal Entry` generado.
+- company, Template, posting date, and search range;
+- structural accounts table;
+- included references table;
+- accounting components table;
+- totals in company currency;
+- calculated difference;
+- link to the generated `Journal Entry`.
 
 ### Payment Settlement Entry Reference
 
-Representa un evento de cobro incluido en el cierre, no simplemente una factura.
+Represents a collection event included in the closing, not merely an invoice.
 
-Fuentes implementadas:
+Implemented sources:
 
-1. `Payment Entry` con `payment_type = Receive`.
-2. Fila de `Sales Invoice Payment` perteneciente a un `Sales Invoice` confirmado y que no sea devolución.
+1. `Payment Entry` with `payment_type = Receive`.
+2. A `Sales Invoice Payment` row belonging to a submitted, non-return `Sales Invoice`.
 
-Los candidatos se filtran por:
+Candidates are filtered by:
 
-- compañía;
-- rango de fechas;
+- company;
+- date range;
 - `Mode of Payment`;
-- cuenta transitoria;
+- clearing account;
 - `docstatus = 1`.
 
-La identidad económica de una referencia es:
+Although the Entry stores `from_date` and `to_date` as `Datetime`, reference
+queries currently convert both values to dates and include the full calendar
+days. The time of day is intentionally not used yet; revisit this only when an
+operational closing requires a narrower time window.
+
+The economic identity of a reference is:
 
 ```text
 (reference_doctype, reference_name, reference_row_name)
 ```
 
-`reference_row_name` distingue filas de pago diferentes dentro de una misma factura. Para `Payment Entry` queda vacío.
+`reference_row_name` distinguishes different payment rows within one invoice.
+It remains empty for `Payment Entry`.
 
-Las filas son cargadas por el backend. El usuario no puede agregarlas manualmente, pero puede eliminar del Draft las que no pertenezcan al cierre.
+The backend loads reference rows. Users cannot add them manually, but they may
+remove Draft rows that do not belong to the closing.
 
 ### Payment Settlement Entry Component
 
-Es la representación operativa y contable que finalmente alimenta `Journal Entry Account`.
+Represents the operational and accounting rows that ultimately feed `Journal Entry Account`.
 
-Tipos actuales:
+| Type         | Origin                               | Behavior                                                                   |
+|:-------------|:-------------------------------------|:---------------------------------------------------------------------------|
+| `Clearing`   | Generated from the Template          | Credits collections grouped by `Mode of Payment`. Not editable.            |
+| `Settlement` | Generated from the Template          | Receives the closing residual. May be debited or credited.                 |
+| `Component`  | Copied from the Template             | Expense, withholding, or other configured movement.                        |
+| `Manual`     | Added by the user                    | Additional movement not anticipated by the Template.                       |
+| `Adjustment` | Generated by `Make Difference Entry` | Balances an accounting difference without altering the operating residual. |
 
-| Type | Origen | Comportamiento |
-|---|---|---|
-| `Clearing` | Generado desde el Template | Acredita los cobros agrupados por `Mode of Payment`. No es editable. |
-| `Settlement` | Generado desde el Template | Recibe el residual del cierre. Puede ser debitado o acreditado. |
-| `Component` | Copiado del Template | Gasto, retención u otro movimiento configurado. |
-| `Manual` | Agregado por el usuario | Movimiento adicional no previsto en el Template. |
-| `Adjustment` | Generado por `Make Difference Entry` | Balancea una diferencia contable sin alterar el residual operativo. |
-
-## Cálculo
+## Calculation
 
 ### 1. Clearing
 
-Las referencias se agrupan por `Mode of Payment`.
+References are grouped by `Mode of Payment`.
 
-Por cada fila estructural se calcula:
+Each structural row calculates:
 
 ```text
-reference_count       = cantidad de referencias
-clearing_amount       = suma en moneda de la cuenta
-clearing_base_amount  = suma en moneda de la compañía
+reference_count       = number of references
+clearing_amount       = sum in account currency
+clearing_base_amount  = sum in company currency
 ```
 
-La fila `Clearing` acredita ambos importes. Su tasa de cambio es un promedio derivado de los cobros incluidos:
+The `Clearing` row credits both amounts. Its exchange rate is the weighted rate
+derived from the included collections:
 
 ```text
 exchange_rate = clearing_base_amount / clearing_amount
 ```
 
-No se sustituye esta tasa agregada por la tasa de la fecha del Settlement, porque la fila está descargando saldos capturados anteriormente con sus propias tasas.
+This aggregate rate is not replaced by the Settlement-date rate because the row
+is clearing balances that were previously captured at their own rates.
 
-### 2. Componentes y Apply To
+### 2. Components and Apply To
 
-Para una línea manual:
+For a manual line:
 
 ```text
 adjustment = debit_in_account_currency - credit_in_account_currency
 ```
 
-- Un débito consume parte del monto disponible para el Settlement.
-- Un crédito aporta fondos y aumenta lo disponible para el Settlement.
+- A debit consumes part of the amount available to the Settlement.
+- A credit contributes funds and increases the amount available to the Settlement.
 
-Cuando hay múltiples destinos, `Apply To` determina qué mapeo clearing → settlement recibe el efecto. El valor de `Apply To` siempre es la cuenta transitoria, no la cuenta de destino.
+When several destinations exist, `Apply To` selects the clearing-to-settlement
+mapping that receives the effect. `Apply To` always contains the clearing
+account, not the destination account.
 
-Si existe un solo destino, una línea sin `Apply To` puede aplicarse automáticamente a ese destino. Con varios destinos, una línea activa sin `Apply To` produce un error.
+When there is only one destination, a line without `Apply To` may be applied to
+that destination automatically. With several destinations, an active line
+without `Apply To` raises an error.
 
-Si el componente y el destino tienen la misma moneda, el movimiento se aplica directamente en esa moneda. Si tienen monedas diferentes, se convierte desde el monto base usando la tasa de la cuenta de destino.
+When the component and destination share a currency, the movement is applied
+directly in that currency. When they differ, it is converted through the base
+amount and destination-account rate.
 
 ### 3. Settlement
 
-Cada fila `Settlement` recibe el saldo residual correspondiente:
+Each `Settlement` row receives its corresponding residual:
 
 ```text
-saldo inicial de clearing
-- débitos aplicados
-+ créditos aplicados
+initial clearing balance
+- applied debits
++ applied credits
 = settlement residual
 ```
 
-- Residual positivo → débito al `Settlement Account`.
-- Residual negativo → crédito al `Settlement Account`; la cuenta de destino aportó el faltante.
+- Positive residual → debit to the `Settlement Account`.
+- Negative residual → credit to the `Settlement Account`; the destination
+  account supplied the shortfall.
 
-Ejemplo:
+Example:
 
 ```text
-Clearing recibido:       C$1,000  (crédito)
-Delivery y CargoTrans:   C$1,100  (débito)
-Fuente manual:             C$300  (crédito)
-Settlement residual:       C$200  (débito)
+Clearing received:       C$1,000  (credit)
+Delivery and CargoTrans: C$1,100  (debit)
+Manual funding source:     C$300  (credit)
+Settlement residual:       C$200  (debit)
 ```
 
-La opción `Override` permite escribir manualmente el monto final de una fila `Settlement`. Solo una fila puede hacer override de una misma cuenta de destino.
+`Override` allows the final amount of a `Settlement` row to be entered manually.
+Only one row may override the same destination account.
 
-### 4. Totales y diferencia
+### 4. Totals and difference
 
-Los totales se calculan en moneda de la compañía:
+Totals are calculated in company currency:
 
 ```text
-total_debit  = suma de component.debit
-total_credit = suma de component.credit
+total_debit  = sum of component.debit
+total_credit = sum of component.credit
 difference   = total_debit - total_credit
 ```
 
-No se permite confirmar el Settlement mientras `difference` sea distinto de cero.
+The Settlement cannot be submitted while `difference` is non-zero.
 
-`Make Difference Entry` permite crear una fila `Adjustment` usando una de las cuentas configuradas en `Company`:
+`Make Difference Entry` creates an `Adjustment` row using one of the accounts configured in `Company`:
 
 - `Round Off`;
 - `Exchange Gain Or Loss`;
 - `Write Off`.
 
-El usuario debe escoger el significado real de la diferencia; no todas las diferencias son redondeo.
+The user must select the real meaning of the difference; not every difference is rounding.
 
-## Flujo operativo
+## Operational flow
 
-1. Crear o seleccionar un `Payment Settlement Template`.
-2. Configurar su compañía, cuentas estructurales y componentes.
-3. Crear un `Payment Settlement Entry`.
-4. Seleccionar Template, fecha contable y rango de fechas.
-5. El backend copia las cuentas y componentes del Template.
-6. El backend carga las referencias elegibles.
-7. El usuario elimina referencias que no pertenecen al cierre.
-8. El usuario introduce los importes de los componentes manuales.
-9. El backend recalcula clearing, tasas, settlement, totales y diferencia.
-10. Si corresponde, el usuario aplica override o crea un ajuste identificado.
-11. Confirmar solamente cuando la diferencia sea cero y los movimientos coincidan con la realidad.
-12. Al confirmar, se crea y confirma el `Journal Entry` y se guarda su enlace.
-13. Al cancelar el Settlement, también se cancela el `Journal Entry` vinculado.
+1. Create or select a `Payment Settlement Template`.
+2. Configure its company, structural accounts, and components.
+3. Create a `Payment Settlement Entry`.
+4. Select the Template, posting date, and date range.
+5. The backend copies the Template accounts and components.
+6. The backend loads eligible references.
+7. The user removes references that do not belong to the closing.
+8. The user enters amounts for manual components.
+9. The backend recalculates clearing, rates, settlement, totals, and difference.
+10. When appropriate, the user applies an override or creates an identified adjustment.
+11. Submit only when the difference is zero and movements match reality.
+12. On submit, the module creates and submits the `Journal Entry` and stores its link.
+13. Cancelling the Settlement also cancels the linked `Journal Entry`.
 
-## Journal Entry generado
+## Generated Journal Entry
 
-Solo se copian componentes con débito o crédito distinto de cero.
+Only components with a non-zero debit or credit are copied.
 
-Por cada fila se transfieren:
+Each row transfers:
 
-- cuenta contable;
+- ledger account;
 - `Bank Account`;
-- tasa de cambio;
-- débito y crédito en moneda de la cuenta;
+- exchange rate;
+- debit and credit in account currency;
 - `User Remark`.
 
-Antes de confirmar el asiento, el módulo compara los montos base recalculados por ERPNext contra los del Settlement. Si ERPNext obtiene un importe diferente por tasa o precisión, se detiene el proceso.
+Before submitting the journal entry, the module compares the base amounts
+recalculated by ERPNext with those in the Settlement. If ERPNext produces a
+different amount because of rate or precision, the process stops.
 
-El `Bank Account` viaja por esta ruta:
+The `Bank Account` follows this path:
 
 ```text
 Template Account
@@ -249,58 +275,98 @@ Template Account
 → Journal Entry Account
 ```
 
-Las filas no bancarias normalmente permanecen sin `Bank Account`.
+Non-bank rows normally remain without a `Bank Account`.
 
-## Validaciones y responsabilidades
+## Validation and responsibilities
 
-El backend es responsable de:
+The backend is responsible for:
 
-- buscar referencias;
-- calcular importes y tasas;
-- recalcular el documento durante `validate`;
-- impedir referencias duplicadas en Settlements confirmados;
-- exigir diferencia cero antes de submit;
-- generar y confirmar el `Journal Entry`;
-- cancelar el asiento vinculado.
+- finding references;
+- calculating amounts and rates;
+- recalculating the document during `validate`;
+- preventing duplicate references in submitted Settlements;
+- requiring a zero difference before submit;
+- creating and submitting the `Journal Entry`;
+- cancelling the linked journal entry.
 
-El JavaScript se limita a experiencia de usuario:
+JavaScript is limited to non-structural user experience:
 
-- filtros de campos;
-- copia solicitada al backend;
-- recarga de referencias al cambiar el rango;
-- botón para buscar referencias;
-- diálogo para crear diferencias;
-- recálculo al eliminar referencias.
+- field filters;
+- copies requested from the backend;
+- reference refresh after a date-range change;
+- the button that retrieves references;
+- the dialog that creates differences;
+- recalculation after references are removed.
 
-## Limitaciones conocidas del MVP
+## Known MVP limitations
 
-- Solo `Manual` tiene comportamiento de cálculo implementado.
-- No existe todavía motor para `Percentage` ni `Fixed Amount`.
-- No se consulta directamente `POS Invoice`.
-- No se usan `Journal Entry`, transacciones bancarias ni otras fuentes como referencias.
-- No hay conciliación automática contra `Bank Transaction`.
-- No hay pruebas automatizadas implementadas.
-- No hay workflow de aprobación adicional al submit estándar de Frappe.
+- Only `Manual` has implemented calculation behavior.
+- `Percentage` and `Fixed Amount` have no calculation engine.
+- `POS Invoice` is not queried directly.
+- `Journal Entry`, bank transactions, and other sources are not used as references.
+- There is no automatic reconciliation against `Bank Transaction`.
+- Automated tests have not been implemented.
+- There is no approval workflow beyond standard Frappe submit.
 
-## Pruebas mínimas antes de desplegar cambios
+The empty test scaffolds remain a pending task, not evidence of automated
+coverage. Add rollback-based regression tests for the current Manual flow
+before relying on future calculation changes in production.
 
-Probar siempre, preferiblemente dentro de una transacción con rollback:
+## Maintenance notes and future ideas
 
-1. Una moneda y un destino no bancario.
-2. USD + NIO dentro del mismo Settlement.
-3. Múltiples clearing accounts hacia un mismo banco.
-4. Múltiples destinos con `Apply To`.
-5. Gastos mayores que los cobros y Settlement residual en crédito.
-6. Fuente manual en crédito que convierte el residual en débito.
-7. Override de Settlement.
-8. Round Off, Exchange Gain Or Loss y Write Off.
-9. Referencia ya usada en otro Settlement confirmado.
-10. Documento fuente cancelado antes de guardar o confirmar.
-11. Submit con diferencia distinta de cero.
-12. Propagación de `Bank Account` y `User Remark` al Journal Entry.
-13. Cancelación del Settlement y del Journal Entry vinculado.
+### Behavior to preserve
 
-## Archivos principales
+- Selecting a Template copies its account mappings into the Entry and creates
+  the corresponding `Clearing` and `Settlement` component rows. At that point,
+  the Template's `Bank Account`, if present, is copied to the `Settlement` row.
+- Calculation uses the Entry's account mappings and component rows to compute
+  the residual. It does not fetch the `Bank Account` again from the Template or
+  Entry account row. On submit, each non-zero component passes its own
+  `Bank Account` to the generated Journal Entry row.
+- A manually added bank-ledger component does not automatically get a
+  `Bank Account`. If one is set on that component, it is passed to the Journal
+  Entry. The Template-configured bank destination is the automatic case.
+- Clearing and Settlement component rows are required for each Entry account
+  mapping. The backend checks their presence during calculation; the form also
+  prevents users from deleting these rows normally.
+
+### Open improvements, not implemented
+
+- Add a Settlement workspace table for monitoring clearing-account balances at a user-selected cutoff date.
+  Let each user select accounts by company and retain that selection for later visits. Show each account's balance
+  in its own currency, with no combined total across currencies. Reuse ERPNext balance calculations and respect account
+  permissions. Evaluate the existing `Account Balance` report before designing a custom workspace block and preference
+  storage. Verify cutoff balances against General Ledger with controlled data. Implementation is deferred; the storage
+  mechanism and workspace integration still need a scoped proposal and approval.
+- Decide whether a manually added bank-ledger component should resolve its `Bank Account` from the account and company.
+  A ledger account may be linked to more than one Bank Account, so ambiguous matches need an explicit rule.
+- Consider a `Reset Components` action for Draft entries when users need to undo manual changes.
+  Define whether it recreates rows from the Template and how it handles entered amounts, overrides, adjustments, and
+  remarks before implementing it.
+- The Template's duplicate Mode of Payment and structural-account exclusions are form query filters.
+  Decide whether server-side checks are useful before treating them as backend invariants.
+- Implement and test `Percentage` and `Fixed Amount` separately from the working Manual flow.
+  Add regression coverage for the Manual cases listed below before changing their calculations.
+
+## Minimum tests before deploying changes
+
+Always test, preferably inside a rollback transaction:
+
+1. One currency and one non-bank destination.
+2. USD and NIO in the same Settlement.
+3. Several clearing accounts targeting the same bank.
+4. Several destinations using `Apply To`.
+5. Expenses greater than collections and a credit Settlement residual.
+6. A manual credit source that converts the residual to a debit.
+7. Settlement override.
+8. Round Off, Exchange Gain Or Loss, and Write Off.
+9. A reference already used in another submitted Settlement.
+10. A source document cancelled before save or submit.
+11. Submit with a non-zero difference.
+12. `Bank Account` and `User Remark` propagation to the Journal Entry.
+13. Cancellation of the Settlement and its linked Journal Entry.
+
+## Main files
 
 ```text
 payment_settlement/
@@ -316,3 +382,6 @@ payment_settlement/
     └── child DocTypes...
 ```
 
+## Technical documentation
+
+Read [AGENTS.md](AGENTS.md) for accounting invariants, reference-source boundaries, and required verification.

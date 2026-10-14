@@ -1,89 +1,95 @@
-# Payment Settlement Maintenance Guide
+# Module Instructions — Payment Settlement
 
-Estas instrucciones aplican a todo el árbol `grupo_real_tools/payment_settlement/`.
+These instructions apply to `grupo_real_tools/payment_settlement/`.
+Read the parent [AGENTS.md](../../AGENTS.md) before working in this module.
+They add module-specific requirements; ask the owner before proceeding if they conflict with parent instructions.
 
-## Forma de trabajar con el propietario
+## Required reading
 
-- No modificar código sin autorización explícita.
-- Antes de editar, explicar el problema y mostrar el cambio exacto propuesto.
-- Trabajar en incrementos pequeños; no convertir un ajuste puntual en un refactor general.
-- Después de una edición autorizada, mostrar el diff y verificar el comportamiento afectado.
-- No tocar ni revertir cambios no relacionados del worktree.
-- No usar datos reales de producción para pruebas destructivas.
-- No confirmar documentos contables reales sin autorización explícita del usuario.
+- Read [README.md](README.md) before proposing changes. It describes implemented behavior, known limitations, and
+  required regression scenarios.
 
-## Regla absoluta para DocTypes
+## Module intent
 
-- **Nunca editar manualmente archivos JSON de DocType.**
-- Los cambios de campos, propiedades, orden, dependencias y permisos se realizan desde la UI de Frappe.
-- Tampoco editar manualmente el bloque de tipos delimitado por `begin: auto-generated types` y `end: auto-generated types`.
-- Después de guardar desde la UI, revisar el JSON y el bloque generado solamente para confirmar el resultado.
-- El código controlador fuera del bloque generado puede editarse únicamente después de aprobación.
+This module does not pay invoices. It settles collection events that have
+already reached clearing accounts and creates an explainable, auditable
+`Journal Entry`.
 
-## Intención del módulo
+Do not assume that every component is a tax or that a withholding is recoverable. The selected account is the primary
+source of accounting meaning.
 
-Este módulo no paga facturas. Liquida eventos de cobro que ya entraron a cuentas transitorias y genera un `Journal Entry` justificable y auditable.
+## Invariants that must be preserved
 
-Leer `README.md` antes de proponer cambios. No asumir que todos los componentes son impuestos ni que una retención es recuperable. El significado contable proviene principalmente de la cuenta seleccionada.
+1. A Template is a recipe; an Entry is a transactional snapshot.
+2. A Template may include several `Mode of Payment` values, but the same value
+   must not appear in more than one row.
+3. `Clearing Account` is derived from the `Mode of Payment` and company.
+4. Each structural row maps one clearing account to one settlement account.
+5. `Bank Account` is optional and must propagate only to its corresponding
+   `Settlement` row.
+6. References represent collection events, not complete invoices.
+7. The duplication key is
+   `(reference_doctype, reference_name, reference_row_name)`.
+8. `Apply To` points to an Entry clearing account.
+9. `Clearing` and `Settlement` are structural rows and must not be editable,
+   except for the controlled `Settlement` override.
+10. Manual components use debit and credit in account currency.
+11. Totals and `difference` are expressed in company currency.
+12. Submit requires `difference == 0`.
+13. The `Journal Entry` must produce exactly the same base amounts as the
+    Settlement.
+14. Cancelling the Settlement must cancel the linked `Journal Entry`.
+15. Definitive accounting logic and validation belong to the backend;
+    JavaScript only orchestrates non-structural UI behavior.
 
-## Invariantes que deben preservarse
+## Component type semantics
 
-1. El Template es una receta; el Entry es una fotografía transaccional.
-2. Un Template puede incluir varios `Mode of Payment`, pero no debe repetir el mismo en más de una fila.
-3. `Clearing Account` se deriva del `Mode of Payment` y la compañía.
-4. Cada fila estructural mapea una clearing account a una settlement account.
-5. `Bank Account` es opcional y solo debe propagarse a la fila `Settlement` correspondiente.
-6. Las referencias representan cobros, no facturas completas.
-7. La clave de duplicidad es `(reference_doctype, reference_name, reference_row_name)`.
-8. `Apply To` apunta a una clearing account del Entry.
-9. Clearing y Settlement son filas estructurales; no deben ser editables salvo el `Override` controlado de Settlement.
-10. Los componentes manuales usan débito y crédito en moneda de la cuenta.
-11. Los totales y `difference` se expresan en moneda de la compañía.
-12. Submit requiere `difference == 0`.
-13. El `Journal Entry` debe producir exactamente los mismos montos base que el Settlement.
-14. Cancelar el Settlement debe cancelar el Journal Entry vinculado.
-15. La lógica contable y las validaciones definitivas pertenecen al backend; JavaScript solo orquesta la UI.
+- `Clearing`: generated, automatic, normally a credit.
+- `Settlement`: generated, automatic residual or explicit override.
+- `Component`: copied from the Template.
+- `Manual`: added by the user and applied during settlement.
+- `Adjustment`: created to balance an identified difference; it does not
+  recalculate the operating residual.
 
-## Semántica de tipos de componente
-
-- `Clearing`: generado, automático, normalmente crédito.
-- `Settlement`: generado, residual automático o override explícito.
-- `Component`: copiado desde el Template.
-- `Manual`: agregado por el usuario y aplicado al cierre.
-- `Adjustment`: creado para cuadrar una diferencia ya identificada; no recalcula el residual operativo.
-
-No cambiar los signos sin recorrer un caso contable completo. En el cálculo actual:
+Do not change signs without tracing a complete accounting case. In the current
+calculation:
 
 ```text
 component adjustment = debit - credit
 settlement residual  -= component adjustment
 ```
 
-Por tanto, un débito reduce lo disponible para el destino y un crédito lo aumenta.
+Therefore, a debit reduces the amount available to the destination, while a
+credit increases it.
 
-## Monedas
+## Currencies
 
-- La clearing row usa la tasa agregada real de sus referencias: `base_amount / amount`.
-- Una fila en moneda de la compañía usa tasa 1.
-- Las demás filas obtienen la tasa de la fecha contable si todavía no tienen una.
-- Cuando componente y destino comparten moneda, aplicar el monto directamente en esa moneda.
-- Cuando difieren, convertir mediante montos base y la tasa del destino.
-- No esconder diferencias cambiarias alterando silenciosamente el efectivo residual.
+- A clearing row uses the real aggregate rate of its references:
+  `base_amount / amount`.
+- A row in company currency uses a rate of 1.
+- Other rows obtain the rate for the accounting date if one has not already
+  been provided.
+- When a component and destination share a currency, apply the amount directly
+  in that currency.
+- When their currencies differ, convert through base amounts and the
+  destination rate.
+- Do not hide exchange differences by silently changing the cash residual.
 
-## Fuentes implementadas
+## Implemented reference sources
 
-No afirmar soporte para una fuente sin encontrar su query en el controlador.
+Do not claim support for a source without finding its query in the controller.
 
-Actualmente existen:
+The currently implemented sources are:
 
-- `Payment Entry` de tipo `Receive`;
-- `Sales Invoice Payment` enlazado a `Sales Invoice` confirmado y no devuelto.
+- `Payment Entry` with type `Receive`;
+- `Sales Invoice Payment` linked to a submitted, non-return `Sales Invoice`.
 
-No existe query directa para `POS Invoice`, `Journal Entry` ni `Bank Transaction`.
+There is no direct query for `POS Invoice`, `Journal Entry`, or
+`Bank Transaction`.
 
-## Ruta de Bank Account
+## Bank Account path
 
-Debe permanecer completa:
+The complete path must remain intact:
 
 ```text
 Payment Settlement Template Account.bank_account
@@ -92,54 +98,61 @@ Payment Settlement Template Account.bank_account
 → Journal Entry Account.bank_account
 ```
 
-La creación server-side del Journal Entry no ejecuta el evento de cliente que normalmente deriva `Bank Account`; por eso debe enviarse explícitamente.
+Server-side `Journal Entry` creation does not execute the client event that
+normally derives `Bank Account`, so it must be supplied explicitly.
 
-## Dónde realizar cambios
+## Responsibility boundaries
 
-- Metadatos y comportamiento declarativo de campos: UI de DocType.
-- Cálculos, consultas, submit y cancelación: `payment_settlement_entry.py`.
-- Configuración server-side del Template: `payment_settlement_template.py`.
-- Filtros, botones y llamadas de formulario: archivos `.js` correspondientes.
-- Textos visibles de Python: envolver en `_()`.
-- Textos visibles de JavaScript: envolver en `__()`.
-- Traducciones: actualizar `.po` mediante las herramientas de traducción; no introducir mensajes duplicados si ya existe uno nativo adecuado.
+- Calculations, queries, submit, and cancellation:
+  `payment_settlement_entry.py`.
+- Server-side Template configuration: `payment_settlement_template.py`.
+- Filters, buttons, and form calls: corresponding `.js` files, only after
+  explicit approval.
+- User-visible Python strings: wrap in `_()`.
+- User-visible JavaScript strings: wrap in `__()`.
+- English is the source language for labels and messages.
+- Spanish translations belong in `.po` catalogs; update them through the
+  translation workflow and reuse native messages when suitable.
 
-## Limitaciones que no deben confundirse con bugs
+## Known limitations that are not bugs
 
-- `Percentage` y `Fixed Amount` existen como opciones, pero no tienen motor de cálculo implementado.
-- El alcance funcional actual es `Manual`.
-- Los archivos de integration tests están vacíos.
-- La conciliación bancaria automática no forma parte del MVP.
+- `Percentage` and `Fixed Amount` exist as options but have no calculation
+  engine.
+- The current functional scope is `Manual`.
+- Integration test files are empty scaffolds.
+- Automatic bank reconciliation is outside the MVP.
 
-## Verificación requerida
+## Required verification
 
-Para cambios de Python:
+For Python changes:
 
-- verificar sintaxis sin escribir bytecode dentro del repositorio;
-- ejecutar `git diff --check`;
-- probar el caso afectado con rollback cuando cree asientos;
-- confirmar que ERPNext recalcula los mismos débitos y créditos base;
-- verificar submit y cancelación juntos.
+- check syntax without writing bytecode inside the repository;
+- run `git diff --check`;
+- test the affected case with rollback when it creates journal entries;
+- confirm that ERPNext recalculates the same base debits and credits;
+- verify submit and cancellation together.
 
-Para cambios de JavaScript:
+For JavaScript changes:
 
-- probar el evento real en Desk;
-- comprobar tanto selección como limpieza del campo;
-- verificar que un cambio de Template o rango no deje referencias o componentes obsoletos.
+- test the real event in Desk;
+- check both selection and field clearing;
+- verify that changing a Template or date range does not leave stale references
+  or components.
 
-Para cambios contables o de monedas, incluir al menos:
+For accounting or currency changes, include at least:
 
-- una cuenta en moneda de la compañía;
-- una cuenta en moneda extranjera;
-- un componente en la misma moneda del destino;
-- un componente en moneda diferente;
-- residual positivo y residual negativo;
-- diferencia de precisión.
+- an account in company currency;
+- an account in a foreign currency;
+- a component in the destination currency;
+- a component in a different currency;
+- a positive and negative residual;
+- a precision difference.
 
-## Prioridades recomendadas
+## Recommended priorities
 
-1. Agregar pruebas automatizadas para el flujo Manual ya estable.
-2. Probar operativamente POS, cajas y mensajeros con cierres reales controlados.
-3. Implementar `Percentage` y `Fixed Amount` solo cuando el comportamiento Manual esté estable.
-4. Agregar nuevas fuentes de referencias solamente por necesidad comprobada.
-5. Considerar conciliación bancaria después de estabilizar la generación de Journal Entries.
+1. Add automated tests for the implemented `Manual` flow.
+2. Operationally test POS, cash-register, and courier settlements with
+   controlled records.
+3. Implement `Percentage` and `Fixed Amount` only after `Manual` is stable.
+4. Add reference sources only for a demonstrated need.
+5. Consider bank reconciliation after `Journal Entry` generation is stable.
