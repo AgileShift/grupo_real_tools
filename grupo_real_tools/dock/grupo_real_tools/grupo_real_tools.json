@@ -1,0 +1,23 @@
+{
+ "app": "grupo_real_tools",
+ "creation": "2026-10-14 16:08:36.332993",
+ "docstatus": 0,
+ "doctype": "Dock",
+ "idx": 0,
+ "items": [
+  {
+   "added": 1,
+   "hidden": 0,
+   "icon": "calculator-duotone",
+   "link_to": "Payment Settlement",
+   "link_type": "Sidebar",
+   "title": "Settlement"
+  }
+ ],
+ "modified": "2026-10-14 16:48:28.596465",
+ "modified_by": "Administrator",
+ "name": "grupo_real_tools",
+ "owner": "Administrator",
+ "standard": 1,
+ "user": ""
+}

@@ -11,15 +11,15 @@ app_license = "mit"
 # required_apps = []
 
 # Each item in the list will be shown as an app in the apps page
-# add_to_apps_screen = [
-# 	{
-# 		"name": app_name,
-# 		"logo": "/assets/grupo_real_tools/logo.png",
-# 		"title": app_title,
-# 		"route": "/grupo_real_tools",
-# 		"has_permission": "grupo_real_tools.api.permission.has_app_permission"
-# 	}
-# ]
+add_to_apps_screen = [
+	{
+		"name": app_name,
+		"logo": "/assets/grupo_real_tools/logo.png",
+		"title": app_title,
+		"route": "/desk/payment-settlement",
+		"sequence": 99,
+	}
+]
 
 # Includes in <head>
 # ------------------
