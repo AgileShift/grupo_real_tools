@@ -67,6 +67,7 @@
    "options": "Account"
   },
   {
+   "columns": 1,
    "depends_on": "eval:[\"Percentage\", \"Fixed Amount\"].includes(doc.calculation_method)",
    "fieldname": "add_deduct_tax",
    "fieldtype": "Select",
@@ -88,7 +89,7 @@
  "grid_page_length": 50,
  "istable": 1,
  "links": [],
- "modified": "2026-10-14 19:32:54.407189",
+ "modified": "2026-10-15 13:37:38.219286",
  "modified_by": "Administrator",
  "module": "Payment Settlement",
  "name": "Payment Settlement Template Component",

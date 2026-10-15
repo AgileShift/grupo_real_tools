@@ -15,13 +15,12 @@ class PaymentSettlementEntryComponent(Document):
 		add_deduct_tax: DF.Literal["", "Add", "Deduct"]
 		apply_to: DF.Link | None
 		bank_account: DF.Link | None
-		calculation_method: DF.Literal["", "Manual", "Percentage", "Fixed Amount"]
+		calculation_method: DF.Literal["", "Automatic", "Manual", "Percentage", "Fixed Amount"]
 		credit: DF.Currency
 		credit_in_account_currency: DF.Currency
 		debit: DF.Currency
 		debit_in_account_currency: DF.Currency
 		exchange_rate: DF.Float
-		override: DF.Check
 		parent: DF.Data
 		parentfield: DF.Data
 		parenttype: DF.Data

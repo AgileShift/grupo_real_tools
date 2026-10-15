@@ -2,8 +2,8 @@ import frappe
 from erpnext.setup.utils import get_exchange_rate
 from frappe import _
 from frappe.model.document import Document
-from frappe.query_builder.custom import ConstantColumn
 from frappe.utils import flt, getdate
+from .references import _get_payment_entry_references, _get_sales_invoice_payment_references
 
 
 class PaymentSettlementEntry(Document):
@@ -144,7 +144,7 @@ class PaymentSettlementEntry(Document):
 			self.set('components', [])
 			return
 
-		template = frappe.get_doc('Payment Settlement Template', self.template)
+		template = frappe.get_cached_doc('Payment Settlement Template', self.template)
 
 		self.set('accounts', [{
 			'mode_of_payment': account.mode_of_payment,
@@ -160,20 +160,21 @@ class PaymentSettlementEntry(Document):
 			clearing_accounts.append({
 				'account': account.clearing_account,
 				'account_currency': account.clearing_account_currency,
-				'calculation_method': 'Manual', 'type': 'Clearing'
+				'calculation_method': 'Automatic', 'type': 'Clearing'
 			})
 
 			settlement_accounts.append({
 				'account': account.settlement_account,
 				'account_currency': account.settlement_account_currency,
 				'bank_account': account.bank_account,
-				'calculation_method': 'Manual', 'type': 'Settlement'
+				'calculation_method': 'Automatic', 'type': 'Settlement'
 			})
 
 		self.set('components', clearing_accounts + [{
 			'account': component.account,
 			'account_currency': component.account_currency,
 			'calculation_method': component.calculation_method,
+			'add_deduct_tax': component.add_deduct_tax,
 			'rate': component.rate,
 			'apply_to': component.apply_to,
 			'type': 'Component',
@@ -185,18 +186,20 @@ class PaymentSettlementEntry(Document):
 		from_date = getdate(self.from_date)
 		to_date = getdate(self.to_date)
 
-		references = []
-		for account in self.accounts:
-			references.extend(self._get_payment_entry_references(account, from_date, to_date))
-			references.extend(self._get_sales_invoice_payment_references(account, from_date, to_date))
+		accounts = [(account.mode_of_payment, account.clearing_account) for account in self.accounts]
+
+		references = (
+			_get_payment_entry_references(self.company, accounts, from_date, to_date) +
+			_get_sales_invoice_payment_references(self.company, accounts, from_date, to_date)
+		) if accounts else []
 
 		candidate_names = {row.reference_name for row in references}
 		settled = {
-			(row.reference_doctype, row.reference_name, row.reference_row_name or '')
-			for row in frappe.get_all(
+			(reference_doctype, reference_name, reference_row_name or '')
+			for reference_doctype, reference_name, reference_row_name in frappe.get_all(
 				'Payment Settlement Entry Reference',
 				filters={'docstatus': 1, 'parenttype': self.doctype, 'reference_name': ['in', candidate_names]},
-				fields=['reference_doctype', 'reference_name', 'reference_row_name']
+				fields=['reference_doctype', 'reference_name', 'reference_row_name'], as_list=True
 			)
 		} if candidate_names else set()  # Query only matching References
 
@@ -209,7 +212,9 @@ class PaymentSettlementEntry(Document):
 	@frappe.whitelist(allow_guest=False)
 	def calculate(self):
 		self._validate_required_components()
+		self._validate_component_calculation_methods()
 		self._calculate_clearing_components()
+		self._calculate_percentage_components()
 		self._set_component_exchange_rates()
 		self._calculate_settlement_components()
 
@@ -226,6 +231,18 @@ class PaymentSettlementEntry(Document):
 
 			if ('Settlement', account.settlement_account) not in present:
 				frappe.throw(_('Missing settlement component for {0}.').format(account.settlement_account))
+
+	def _validate_component_calculation_methods(self):
+		allowed_methods = {
+			'Clearing': ('Automatic',),
+			'Settlement': ('Automatic', 'Manual'),
+			'Adjustment': ('Manual',),
+			'Component': ('Manual', 'Percentage', 'Fixed Amount'),
+			'Manual': ('Manual', 'Percentage', 'Fixed Amount'),
+		}
+		for component in self.components:
+			if component.calculation_method not in allowed_methods.get(component.type, ()):
+				frappe.throw(_('Invalid Option'), title=_('Calculation Method'))
 
 	def _validate_settled_references(self):
 		reference_keys = {(
@@ -279,6 +296,32 @@ class PaymentSettlementEntry(Document):
 					)
 					break  # Match each existing clearing row only once.
 
+	def _calculate_percentage_components(self):
+		clearing_accounts = {account.clearing_account: account for account in self.accounts}
+
+		for component in self.components:
+			if component.type not in ('Component', 'Manual') or component.calculation_method != 'Percentage':
+				continue
+
+			account = clearing_accounts.get(component.apply_to)
+			if not account:
+				frappe.throw(_('Row {0}: Apply To does not belong to this settlement.').format(component.idx))
+
+			if component.account_currency != account.clearing_account_currency:
+				frappe.throw(
+					_('Account {0} is invalid. Account Currency must be {1}').format(
+						component.account, account.clearing_account_currency
+					)
+				)
+
+			if component.add_deduct_tax not in ('Add', 'Deduct'):
+				frappe.throw(_('Invalid Option'), title=_('Add or Deduct'))
+
+			# Use gross collections in account currency; base rounding happens with the other components.
+			amount = account.clearing_amount * (component.rate or 0) / 100
+			component.debit_in_account_currency = amount if component.add_deduct_tax == 'Deduct' else 0
+			component.credit_in_account_currency = amount if component.add_deduct_tax == 'Add' else 0
+
 	def _set_component_exchange_rates(self):
 		if not self.posting_date:
 			return
@@ -326,9 +369,9 @@ class PaymentSettlementEntry(Document):
 
 		for component in self.components:
 			if component.type == 'Settlement':
-				if component.override:
+				if component.calculation_method == 'Manual':
 					previous = settlement_components.get(component.account)
-					if previous and previous.override:
+					if previous and previous.calculation_method == 'Manual':
 						frappe.throw(_('Only one row can override {0}.').format(component.account))
 					settlement_components[component.account] = component
 				else:
@@ -386,82 +429,11 @@ class PaymentSettlementEntry(Document):
 			if component is not settlement_components[component.account]:
 				component.debit_in_account_currency = 0
 				component.credit_in_account_currency = 0
-			elif not component.override:
+			elif component.calculation_method == 'Automatic':
 				balance = settlements[component.account]
 				component.debit_in_account_currency = max(balance, 0)
 				component.credit_in_account_currency = max(-balance, 0)
 			# Base amounts may leave an exchange difference; do not alter the cash balance to hide it.
 			self._calculate_component_base_amounts(component)
 
-	def _get_payment_entry_references(self, account, from_date, to_date):
-		payment_entry = frappe.qb.DocType('Payment Entry')
-
-		references = (
-			frappe.qb.from_(payment_entry)
-			.select(
-				ConstantColumn('Payment Entry').as_('reference_doctype'),
-				payment_entry.name.as_('reference_name'),
-				payment_entry.posting_date,
-				payment_entry.party_type,
-				payment_entry.party,
-				payment_entry.party_name,
-				payment_entry.mode_of_payment,
-				payment_entry.paid_to_account_currency.as_('currency'),
-				payment_entry.target_exchange_rate.as_('exchange_rate'),
-				payment_entry.received_amount.as_('amount'),
-				payment_entry.base_received_amount.as_('base_amount'),
-				payment_entry.reference_no,
-			).where(
-				(payment_entry.docstatus == 1)
-				& (payment_entry.company == self.company)
-				& (payment_entry.payment_type == 'Receive')
-				& (payment_entry.mode_of_payment == account.mode_of_payment)
-				& (payment_entry.paid_to == account.clearing_account)
-				& (payment_entry.posting_date >= from_date)
-				& (payment_entry.posting_date <= to_date)
-			)
-			.orderby(payment_entry.posting_date)
-			.orderby(payment_entry.name)
-		)
-
-		return references.run(as_dict=True)
-
-	def _get_sales_invoice_payment_references(self, account, from_date, to_date):
-		sales_invoice = frappe.qb.DocType('Sales Invoice')
-		sales_invoice_payment = frappe.qb.DocType('Sales Invoice Payment')
-
-		references = (
-			frappe.qb.from_(sales_invoice)
-			.inner_join(sales_invoice_payment)
-			.on(
-				(sales_invoice_payment.parent == sales_invoice.name)
-				& (sales_invoice_payment.parenttype == 'Sales Invoice')
-			).select(
-				ConstantColumn('Sales Invoice').as_('reference_doctype'),
-				sales_invoice.name.as_('reference_name'),
-				sales_invoice_payment.name.as_('reference_row_name'),
-				sales_invoice.posting_date,
-				ConstantColumn('Customer').as_('party_type'),
-				sales_invoice.customer.as_('party'),
-				sales_invoice.customer_name.as_('party_name'),
-				sales_invoice_payment.mode_of_payment,
-				sales_invoice.currency,
-				sales_invoice.conversion_rate.as_('exchange_rate'),
-				sales_invoice_payment.amount,
-				sales_invoice_payment.base_amount,
-				sales_invoice_payment.reference_no,
-			).where(
-				(sales_invoice.docstatus == 1)
-				& (sales_invoice.is_return == 0)
-				& (sales_invoice.company == self.company)
-				& (sales_invoice_payment.mode_of_payment == account.mode_of_payment)
-				& (sales_invoice_payment.account == account.clearing_account)
-				& (sales_invoice.posting_date >= from_date)
-				& (sales_invoice.posting_date <= to_date)
-			)
-			.orderby(sales_invoice.posting_date)
-			.orderby(sales_invoice.name)
-			.orderby(sales_invoice_payment.idx)
-		)
-
-		return references.run(as_dict=True)
+# 426
