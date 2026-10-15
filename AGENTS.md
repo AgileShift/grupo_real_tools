@@ -1,14 +1,14 @@
 # Agent Instructions — Grupo Real Tools
 
 Maintenance reference:
-[Frappe App Documentation Standard](../../frappe-app-standards/skills/frappe-app-docs-normalize/references/frappe-app-standard.md).
+[Documentation normalization skill](../../frappe-app-standards/skills/frappe-app-docs-normalize/SKILL.md).
 
 Technical app name: `grupo_real_tools`.
 
 These instructions apply throughout this repository. Module guides add specific instructions.
 If they conflict with the root rules, ask the owner before proceeding.
 
-<!-- BEGIN SHARED RULES: maintained from frappe-app-standard.md -->
+<!-- BEGIN SHARED RULES: maintained from agents-templates.md -->
 ## General rules — shared across apps
 
 ### Working agreement
@@ -16,8 +16,8 @@ If they conflict with the root rules, ask the owner before proceeding.
 - Read the root README, root AGENTS, and applicable module guides before proposing or making changes. Read
   CONTRIBUTING.md before preparing a commit or pull request.
 - Before working inside a module, locate and read its applicable local instructions. When creating or reorganizing
-  documentation, consult the canonical standard linked by the root AGENTS. Keep template schemas in that standard and do
-  not repeat parent rules in module guides.
+  documentation, consult the normalization skill linked by the root AGENTS. Keep template schemas in its references
+  and do not repeat parent rules in module guides.
 - Before editing, explain the objective, exact affected files, proposed behavior, material risks, and verification plan.
   Obtain explicit authorization for that scope. Honor authorization already given; do not request it again for the same
   work.
