@@ -12,6 +12,7 @@ class PaymentSettlementEntryComponent(Document):
 
 		account: DF.Link
 		account_currency: DF.Link | None
+		add_deduct_tax: DF.Literal["", "Add", "Deduct"]
 		apply_to: DF.Link | None
 		bank_account: DF.Link | None
 		calculation_method: DF.Literal["", "Manual", "Percentage", "Fixed Amount"]
@@ -24,7 +25,7 @@ class PaymentSettlementEntryComponent(Document):
 		parent: DF.Data
 		parentfield: DF.Data
 		parenttype: DF.Data
-		rate: DF.Percent
+		rate: DF.Float
 		type: DF.Literal["Manual", "Clearing", "Settlement", "Component", "Adjustment"]
 		user_remark: DF.SmallText | None
 	# end: auto-generated types

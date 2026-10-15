@@ -1,5 +1,7 @@
 frappe.ui.form.on("Payment Settlement Template", {
 	setup(frm) {
+		frm.page.sidebar.toggle(false);
+
 		// Hide payment modes already selected in the Template's account rows.
 		frm.set_query('mode_of_payment', 'accounts', (doc) => ({
 			filters: {
