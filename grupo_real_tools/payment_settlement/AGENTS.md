@@ -77,7 +77,7 @@ credit increases it.
 
 ## Implemented reference sources
 
-Do not claim support for a source without finding its query in the controller.
+Do not claim support for a source without finding its query in `doctype/payment_settlement_entry/references.py`.
 
 The currently implemented sources are:
 
@@ -103,8 +103,9 @@ normally derives `Bank Account`, so it must be supplied explicitly.
 
 ## Responsibility boundaries
 
-- Calculations, queries, submit, and cancellation:
+- Calculations, reference orchestration, submit, and cancellation:
   `payment_settlement_entry.py`.
+- Source queries: `doctype/payment_settlement_entry/references.py`.
 - Server-side Template configuration: `payment_settlement_template.py`.
 - Filters, buttons, and form calls: corresponding `.js` files, only after
   explicit approval.
@@ -116,10 +117,11 @@ normally derives `Bank Account`, so it must be supplied explicitly.
 
 ## Known limitations that are not bugs
 
-- `Percentage` and `Fixed Amount` exist as options but have no calculation
-  engine.
-- The current functional scope is `Manual`.
-- Integration test files are empty scaffolds.
+- `Percentage` uses gross collections from an explicit `Apply To` clearing account. Source and component currencies
+  must match. `Deduct` creates a debit; `Add` creates a credit. Manual calculation methods retain entered amounts.
+- `Fixed Amount`, cross-currency percentage bases, and percentage bases on a remaining balance are not implemented.
+- Settlement residuals aggregate by destination account, including when several clearing sources share that account.
+- In-memory calculation tests exist in `test_calculations.py`; database integration tests remain empty scaffolds.
 - Automatic bank reconciliation is outside the MVP.
 
 ## Required verification
@@ -153,6 +155,6 @@ For accounting or currency changes, include at least:
 1. Add automated tests for the implemented `Manual` flow.
 2. Operationally test POS, cash-register, and courier settlements with
    controlled records.
-3. Implement `Percentage` and `Fixed Amount` only after `Manual` is stable.
+3. Extend gross-percentage calculations and implement `Fixed Amount` in separate approved increments.
 4. Add reference sources only for a demonstrated need.
 5. Consider bank reconciliation after `Journal Entry` generation is stable.

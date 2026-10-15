@@ -41,11 +41,18 @@ The **Manual** flow is implemented and has been tested interactively, including:
 - prevention of previously settled references;
 - prevention of submit when debit and credit do not balance.
 
-`Percentage` and `Fixed Amount` appear in the DocTypes, but their calculations
-are not implemented. Only `Manual` lines should be considered functional in the MVP.
+`Percentage` calculates a charge on the gross collections of the clearing account selected in `Apply To`.
+The component and clearing account must use the same currency. `Fixed Amount` is not implemented yet.
 
-The automated test files remain empty scaffolds.
-Current verification has been manual and through rollback transactions.
+Template and Entry component forms show and require `Rate` and `Add or Deduct` only for `Percentage` and
+`Fixed Amount`. Both fields are read-only for `Manual`. `Rate` is a Float so it can represent either a percentage
+or a fixed amount. The Entry copies `add_deduct_tax` from the Template and uses it for percentage calculations.
+In the Template form, `Apply To` is mandatory for `Percentage` to identify the clearing source;
+it remains optional for `Manual` and `Fixed Amount`.
+
+In-memory calculation tests cover percentage charges, Manual regressions, and comparison with ERPNext's company-currency
+calculation. Submit/cancel wiring is tested with a journal double, without database persistence. The integration test
+scaffolds remain empty; full transactional verification still requires controlled documents and rollback.
 
 ## Document model
 
@@ -187,6 +194,19 @@ When the component and destination share a currency, the movement is applied
 directly in that currency. When they differ, it is converted through the base
 amount and destination-account rate.
 
+For `Percentage` on a `Component` or user-added `Manual` row, the backend requires a valid `Apply To` and `Add or Deduct`:
+
+```text
+amount = selected clearing_amount × rate / 100
+Deduct → debit_in_account_currency  → reduces the settlement residual
+Add    → credit_in_account_currency → increases the settlement residual
+```
+
+The component must use the clearing account's currency. The percentage uses gross collections, before other components;
+it does not calculate a percentage on a previous charge or on the remaining balance. Amounts use the existing component
+precision and exchange-rate calculation. Recalculation clears the opposite debit/credit side and recomputes zero amounts
+when references are removed. Rows whose calculation method is `Manual` retain their entered amounts.
+
 ### 3. Settlement
 
 Each `Settlement` row receives its corresponding residual:
@@ -300,17 +320,22 @@ JavaScript is limited to non-structural user experience:
 
 ## Known MVP limitations
 
-- Only `Manual` has implemented calculation behavior.
-- `Percentage` and `Fixed Amount` have no calculation engine.
+- `Percentage` requires an explicit clearing source and the same currency for the source and component.
+- Percentage bases on previous charges or remaining balances are not implemented.
+- `Fixed Amount` has no calculation engine.
 - `POS Invoice` is not queried directly.
 - `Journal Entry`, bank transactions, and other sources are not used as references.
 - There is no automatic reconciliation against `Bank Transaction`.
-- Automated tests have not been implemented.
+- Automated database integration tests have not been implemented.
 - There is no approval workflow beyond standard Frappe submit.
 
-The empty test scaffolds remain a pending task, not evidence of automated
-coverage. Add rollback-based regression tests for the current Manual flow
-before relying on future calculation changes in production.
+The in-memory tests do not replace rollback-based integration tests or a controlled Desk trial before deployment.
+
+Run the calculation tests from the app root:
+
+```sh
+FRAPPE_STREAM_LOGGING=1 ../../env/bin/python -m unittest grupo_real_tools.payment_settlement.doctype.payment_settlement_entry.test_calculations
+```
 
 ## Maintenance notes and future ideas
 
@@ -345,8 +370,10 @@ before relying on future calculation changes in production.
   remarks before implementing it.
 - The Template's duplicate Mode of Payment and structural-account exclusions are form query filters.
   Decide whether server-side checks are useful before treating them as backend invariants.
-- Implement and test `Percentage` and `Fixed Amount` separately from the working Manual flow.
-  Add regression coverage for the Manual cases listed below before changing their calculations.
+- Extend Percentage only after defining cross-currency bases and charges on a remaining balance.
+  Implement `Fixed Amount` separately from the working Manual and gross-percentage flows.
+- Settlement residuals currently aggregate by destination account. Separate deposits from several clearing sources into
+  the same bank account still require a design that preserves each source and the existing Manual flow.
 
 ## Minimum tests before deploying changes
 
@@ -378,7 +405,9 @@ payment_settlement/
     │   └── payment_settlement_template.js
     ├── payment_settlement_entry/
     │   ├── payment_settlement_entry.py
-    │   └── payment_settlement_entry.js
+    │   ├── payment_settlement_entry.js
+    │   ├── references.py
+    │   └── test_calculations.py
     └── child DocTypes...
 ```
 
