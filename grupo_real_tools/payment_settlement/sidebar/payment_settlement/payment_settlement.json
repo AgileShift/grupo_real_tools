@@ -137,6 +137,22 @@
    "child": 1,
    "collapsible": 1,
    "hidden": 0,
+   "icon": "layout-template",
+   "indent": 0,
+   "is_default_module": 0,
+   "keep_closed": 0,
+   "label": "Journal Entry Template",
+   "link_to": "Journal Entry Template",
+   "link_type": "DocType",
+   "open_in_new_tab": 1,
+   "show_arrow": 0,
+   "type": "Link"
+  },
+  {
+   "added": 0,
+   "child": 1,
+   "collapsible": 1,
+   "hidden": 0,
    "icon": "piggy-bank",
    "indent": 0,
    "is_default_module": 0,
@@ -213,7 +229,8 @@
    "type": "Link"
   }
  ],
- "modified": "2026-10-14 16:04:06.003774",
+ "merged_from": "[\"Payment Settlement\"]",
+ "modified": "2026-10-16 09:41:51.147236",
  "modified_by": "Administrator",
  "module": "Payment Settlement",
  "name": "Payment Settlement",

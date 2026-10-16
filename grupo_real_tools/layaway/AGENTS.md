@@ -1,66 +1,56 @@
 # Module Instructions — Layaway
 
 These instructions apply to `grupo_real_tools/layaway/`.
-Read the parent [AGENTS.md](../../AGENTS.md) before working in this module.
-They add module-specific requirements; ask the owner before proceeding if they conflict with parent instructions.
+Read the parent [AGENTS.md](../../AGENTS.md) before working in this module. Follow the root and any intermediate guides.
+These instructions add module-specific requirements without weakening them.
+If they conflict with parent instructions, ask the owner before proceeding.
 
 ## Required reading
 
 - Read [README.md](README.md) before proposing work in this module.
 - Treat the README as intended design, not as evidence that behavior is already implemented.
-- If the README is empty or incomplete, state that limitation and use only requirements approved in the conversation; do
-  not invent missing decisions.
+- If the README is empty or incomplete, state that limitation and use only requirements approved in the conversation;
+  do not invent missing decisions.
 - Explicitly distinguish the current phase, future architecture, and pending business rules.
 - If the README and implemented behavior differ, present the discrepancy before choosing which one to preserve.
 
-## Module intent
+## Module-specific rules
 
-`Layaway` is the business document that orchestrates a merchandise reservation lifecycle.
+### Module intent
 
-ERPNext remains authoritative for its standard documents:
-
-```text
-Layaway
-├── Sales Order
-│   └── Stock Reservation
-├── Payment Entry(s)
-└── Completion / Expiration / Forfeiture
-```
-
+Preserve the orchestration role and ERPNext document ownership described in
+[Intended architecture](README.md#intended-architecture).
 Do not duplicate sales, payment, inventory, or accounting concepts that already belong to ERPNext.
 
-## Phase discipline
+### Phase discipline
 
 Work only within the authorized phase. Completing one phase does not authorize starting the next phase.
 
-### Phase 1 — Visual structure
+#### Phase 1 — Visual structure
 
 - Create and arrange `Layaway`, `Layaway Item`, and `Layaway Settings` through the DocType UI.
-- Represent the customer, reservation, items, payment summary, expiration, payment history, terms, and audit
-  information visually.
+- Represent the customer, reservation, items, payment summary, expiration, payment history, terms, and audit information visually.
 - Fields may remain structural or act as placeholders until their logic is authorized.
-- Prefer standard Frappe capabilities: sections, columns, tables, read-only fields, and declarative dependencies
-  configured in Desk.
+- Prefer standard Frappe capabilities: sections, columns, tables, read-only fields, and declarative dependencies configured in Desk.
 
-### Phase 2 — ERPNext links
+#### Phase 2 — ERPNext links
 
 - Link standard documents only after specific approval.
 - Define ownership, cardinality, cancellation behavior, and traceability for each link before implementation.
 
-### Phase 3 — Rules and transitions
+#### Phase 3 — Rules and transitions
 
-- Implement limits, calculations, expiration, states, and accounting actions only after each flow is documented and
-  approved.
+- Implement limits, calculations, expiration, states, and accounting actions only after each flow is documented and approved.
 - Keep definitive validation and state transitions in the backend.
 
-## Phase 1 structural work
+### Phase 1 structural work
 
-- Follow the root rules for Frappe UI and generated metadata. Create and arrange all Phase 1 structure through Desk,
-  then inspect regenerated files without manually correcting them.
-- If standard Desk configuration cannot achieve the required layout, stop and ask for a decision before proposing custom
-  frontend behavior.
+- Follow the root rules for Frappe UI and generated metadata.
+  Create and arrange all Phase 1 structure through Desk, then inspect regenerated files without manually correcting them.
+- If standard Desk configuration cannot achieve the required layout,
+  stop and ask for a decision before proposing custom frontend behavior.
 
-## Phase 1 boundaries
+### Phase 1 boundaries
 
 While authorization is limited to Phase 1, do not implement:
 
@@ -78,7 +68,7 @@ While authorization is limited to Phase 1, do not implement:
 In Phase 1, payment history must remain a visual location only.
 Do not create an accounting child table that duplicates `Payment Entry`.
 
-## Before implementation
+### Before implementation
 
 Present the following to the owner:
 
@@ -90,7 +80,7 @@ Present the following to the owner:
 
 Do not continue until explicit authorization is received.
 
-## Responsibility boundaries
+### Responsibility boundaries
 
 - Fields, layout, properties, labels, and permissions: DocType UI.
 - Definitive validation and business rules: Python controller, when its phase is authorized.
@@ -98,7 +88,7 @@ Do not continue until explicit authorization is received.
 - Commercial documents, payments, inventory, and accounting: standard ERPNext DocTypes.
 - Configurable rules: `Layaway Settings`; do not hardcode them when their implementation phase arrives.
 
-## Required verification
+## Verification
 
 After authorized changes:
 

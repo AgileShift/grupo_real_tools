@@ -1,50 +1,39 @@
 # Module Instructions — Procurement
 
 These instructions apply to `grupo_real_tools/procurement/`.
-Read the parent [AGENTS.md](../../AGENTS.md) before working in this module.
-They add module-specific requirements; ask the owner before proceeding if they conflict with parent instructions.
+Read the parent [AGENTS.md](../../AGENTS.md) before working in this module. Follow the root and any intermediate guides.
+These instructions add module-specific requirements without weakening them.
+If they conflict with parent instructions, ask the owner before proceeding.
 
 ## Required reading
 
-- Read [README.md](README.md) before proposing work. It records the module's purpose, current implementation status,
-  intended boundaries, and technical references.
+- Read [README.md](README.md) before proposing work.
+  It records the module's purpose, current implementation status, intended boundaries, and technical references.
 
-## State that must be verified
+## Module-specific rules
 
-Do not confuse existing structure with completed functionality. Before claiming
-that a flow is implemented, locate its controller, invocation, and test.
+### State that must be verified
 
-At the time this guide was introduced:
+Do not confuse existing structure with completed functionality.
+Before claiming that a flow is implemented, locate its controller, invocation, and test.
+Revalidate the observations in [Implemented behavior](README.md#implemented-behavior) against current code before relying on them.
 
-- `Procurement.before_validate` only calculates proposal quantities and totals;
-- the `Procurement` JavaScript file implements no operational behavior;
-- the integration tests are empty scaffolds;
-- the presence of fields or buttons does not prove that the module creates
-  `Item`, `Purchase Invoice`, `Landed Cost Voucher`, or any other document.
+### Module model
 
-Revalidate these facts against the current code before relying on them in a
-future analysis.
-
-## Module model
-
-- `Procurement` coordinates the process; it does not replace ERPNext's standard
-  purchasing, inventory, or accounting documents.
-- `Procurement Item Proposal` represents proposed information before a final
-  `Item` necessarily exists.
+- `Procurement` coordinates the process; it does not replace ERPNext's standard purchasing, inventory, or accounting documents.
+- `Procurement Item Proposal` represents proposed information before a final `Item` necessarily exists.
 - `Procurement Item` must not become a parallel copy of the Item master.
-- Merchandise invoices, freight invoices, and additional costs must preserve
-  their distinct identity and document traceability.
-- Do not assume that an intended action such as `Configure Item` is implemented
-  merely because its field exists.
+- Merchandise invoices, freight invoices, and additional costs must preserve their distinct identity and document traceability.
+- Do not assume that an intended action such as `Configure Item` is implemented merely because its field exists.
 
-## Structural UI work
+### Structural UI work
 
-- Follow the root rules for Frappe UI and generated metadata. Make structural changes in Desk and inspect regenerated
-  files afterward without manually correcting them.
-- If standard Desk configuration cannot express the required design, stop and present the limitation before proposing
-  custom frontend behavior.
+- Follow the root rules for Frappe UI and generated metadata.
+  Make structural changes in Desk and inspect regenerated files afterward without manually correcting them.
+- If standard Desk configuration cannot express the required design,
+  stop and present the limitation before proposing custom frontend behavior.
 
-## Before expanding the flow
+### Before expanding the flow
 
 Present and obtain approval for:
 
@@ -56,30 +45,26 @@ Present and obtain approval for:
 6. Idempotency, cancellation, and recovery from partial failures.
 7. The exact files that would be modified.
 
-Do not invent input formats, identifiers, or automation. Do not add Excel/CSV,
-bulk imports, or external integrations without an explicit owner decision.
+Do not invent input formats, identifiers, or automation.
+Do not add Excel/CSV, bulk imports, or external integrations without an explicit owner decision.
 
-## Accounting and inventory boundaries
+### Accounting and inventory boundaries
 
-- Do not create, submit, or cancel real documents during a test without
-  explicit authorization.
+- Do not create, submit, or cancel real documents during a test without explicit authorization.
 - Do not create inventory movements parallel to standard ERPNext documents.
-- Do not combine merchandise and freight invoices when they represent separate
-  obligations.
-- Do not allocate landed cost until the allocation basis, currencies, rounding,
-  and eligible documents have been defined.
+- Do not combine merchandise and freight invoices when they represent separate obligations.
+- Do not allocate landed cost until the allocation basis, currencies, rounding, and eligible documents have been defined.
 - Every retry path must avoid duplicate Items, invoices, or costs.
 
-## Responsibility boundaries
+### Responsibility boundaries
 
 - Fields, layout, properties, labels, and permissions: DocType UI.
 - Normalization, validation, and idempotency: Python backend.
 - Non-structural form events and calls: JavaScript, only with explicit approval.
 - Purchasing, receipt, inventory, and accounting: standard ERPNext documents.
-- Process decisions and state: `Procurement`, without duplicating ERPNext
-  ledgers.
+- Process decisions and state: `Procurement`, without duplicating ERPNext ledgers.
 
-## Required verification
+## Verification
 
 After authorized changes:
 
