@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Grupo Real Tools VERSION\n"
 "Report-Msgid-Bugs-To: dev@gruporeal.org\n"
-"POT-Creation-Date: 2026-09-12 10:58-0615\n"
-"PO-Revision-Date: 2026-09-12 10:58-0615\n"
+"POT-Creation-Date: 2026-10-16 11:05-0615\n"
+"PO-Revision-Date: 2026-10-16 11:05-0615\n"
 "Last-Translator: dev@gruporeal.org\n"
 "Language-Team: dev@gruporeal.org\n"
 "MIME-Version: 1.0\n"
@@ -41,10 +41,16 @@ msgstr ""
 msgid "Attributes JSON"
 msgstr ""
 
+#. Label of a Sidebar Item
+#: grupo_real_tools/payment_settlement/sidebar/payment_settlement/payment_settlement.json
+msgid "Bank Reconciliation"
+msgstr ""
+
 #. Label of the calculation_method (Select) field in DocType 'Payment
 #. Settlement Entry Component'
 #. Label of the calculation_method (Select) field in DocType 'Payment
 #. Settlement Template Component'
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:259
 #: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_component/payment_settlement_entry_component.json
 #: grupo_real_tools/payment_settlement/doctype/payment_settlement_template_component/payment_settlement_template_component.json
 msgid "Calculation Method"
@@ -129,30 +135,29 @@ msgstr ""
 msgid "Item Proposals"
 msgstr ""
 
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:317
+#. Name of a DocType
+#: grupo_real_tools/layaway/doctype/layaway/layaway.json
+msgid "Layaway"
+msgstr ""
+
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:244
+msgid "Missing clearing component for {0}."
+msgstr ""
+
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:247
 msgid "Missing settlement component for {0}."
 msgstr ""
 
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:308
-msgid "Only one row can override {0}."
-msgstr ""
-
-#. Label of the override (Check) field in DocType 'Payment Settlement Entry
-#. Component'
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_component/payment_settlement_entry_component.json
-msgid "Override"
-msgstr ""
-
-#. Title of a Workspace Sidebar
-#: grupo_real_tools/workspace_sidebar/payment_settlement.json
+#. Title of a Sidebar
+#: grupo_real_tools/payment_settlement/sidebar/payment_settlement/payment_settlement.json
 msgid "Payment Settlement"
 msgstr ""
 
 #. Name of a DocType
-#. Label of a Workspace Sidebar Item
+#. Label of a Sidebar Item
 #: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.json
 #: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:54
-#: grupo_real_tools/workspace_sidebar/payment_settlement.json
+#: grupo_real_tools/payment_settlement/sidebar/payment_settlement/payment_settlement.json
 msgid "Payment Settlement Entry"
 msgstr ""
 
@@ -172,9 +177,9 @@ msgid "Payment Settlement Entry Reference"
 msgstr ""
 
 #. Name of a DocType
-#. Label of a Workspace Sidebar Item
+#. Label of a Sidebar Item
 #: grupo_real_tools/payment_settlement/doctype/payment_settlement_template/payment_settlement_template.json
-#: grupo_real_tools/workspace_sidebar/payment_settlement.json
+#: grupo_real_tools/payment_settlement/sidebar/payment_settlement/payment_settlement.json
 msgid "Payment Settlement Template"
 msgstr ""
 
@@ -220,16 +225,17 @@ msgstr ""
 msgid "Reference Row Name"
 msgstr ""
 
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:341
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:322
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:424
 msgid "Row {0}: Apply To does not belong to this settlement."
 msgstr ""
 
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:319
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:354
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:402
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:437
 msgid "Row {0}: a valid exchange rate is required."
 msgstr ""
 
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:347
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:430
 msgid "Row {0}: select Apply To because the settlement has multiple destinations."
 msgstr ""
 
@@ -241,6 +247,7 @@ msgstr ""
 
 #. Option for the 'Type' (Select) field in DocType 'Payment Settlement Entry
 #. Component'
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:391
 #: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_component/payment_settlement_entry_component.json
 msgid "Settlement"
 msgstr ""
@@ -311,7 +318,7 @@ msgstr ""
 msgid "Transporter Invoice No"
 msgstr ""
 
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:232
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:287
 msgid "{0} was already settled in {1}."
 msgstr ""
 

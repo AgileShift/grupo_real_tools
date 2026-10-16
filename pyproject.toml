@@ -12,6 +12,7 @@ dependencies = []
 [project.urls]
 Homepage = "https://github.com/AgileShift/grupo_real_tools"
 Repository = "https://github.com/AgileShift/grupo_real_tools.git"
+Documentation = ""
 "Bug Reports" = "https://github.com/AgileShift/grupo_real_tools/issues"
 
 [build-system]
@@ -27,8 +28,8 @@ build-backend = "flit_core.buildapi"
 packages = []
 
 [tool.bench.frappe-dependencies]
-frappe = ">=16.0.0,<17.0.0"
-erpnext = ">=16.0.0,<17.0.0"
+frappe = ">=16.50.0,<17.0.0"
+erpnext = ">=16.50.0,<17.0.0"
 
 [tool.ruff]
 line-length = 110

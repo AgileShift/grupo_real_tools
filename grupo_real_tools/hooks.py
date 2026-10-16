@@ -17,7 +17,7 @@ add_to_apps_screen = [
 		"logo": "/assets/grupo_real_tools/logo.png",
 		"title": app_title,
 		"route": "/desk/payment-settlement",
-		"sequence": 99,
+		"sequence_id": 99,
 	}
 ]
 
