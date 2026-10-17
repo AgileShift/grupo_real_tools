@@ -5,261 +5,359 @@ Development instructions: [AGENTS.md](AGENTS.md).
 
 ## Purpose and scope
 
-The Layaway module will manage the lifecycle of merchandise reservations, partial payments, inventory reservation,
-expiration, completion, and forfeiture.
+The Layaway module is intended to manage merchandise reservations, deposits, partial payments, expiration, completion,
+and forfeiture while preserving ERPNext as the authority for sales, payments, inventory, delivery, and accounting.
 
-Development is intentionally incremental.
-This document describes the intended architecture and the currently authorized first phase;
-it does not claim that future-phase behavior is already implemented.
+`Layaway` is the business orchestrator. It must link and coordinate standard ERPNext documents instead of reproducing
+their ledgers or transactional behavior.
+
+Development remains incremental. The approved design uses selectable `Layaway Plan` records rather than one global
+`Layaway Settings` document, allowing each company to offer multiple plans such as 15-day, 30-day, or 45-day preorder
+plans with different eligibility limits, deposit percentages, pricing behavior, and contractual terms.
 
 ## Implemented behavior
 
-This README does not claim that Layaway workflows are implemented.
-It records the intended architecture, target rules, and authorized Phase 1 scope.
+The current checkout contains a generated, submittable `Layaway` DocType scaffold with only its standard
+`amended_from` field. Its controller contains no business logic, its JavaScript file contains only commented scaffold
+code, and its integration test is empty.
+
+No current implementation creates Sales Orders, receives or aggregates payments, reserves stock, evaluates customer
+exposure, enforces plan rules, expires Layaways, completes delivery, or performs forfeiture accounting.
+
+`Layaway Plan` and `Layaway Item` are approved design, not implemented DocTypes.
 
 ## Technical documentation
 
-The following sections describe intended design and phase-specific requirements, not implemented workflows.
+### Approved architecture
 
-### Target business rules
+#### Custom DocTypes
 
-The current business rules are:
+| DocType        | Ownership                                                                                    |
+|----------------|----------------------------------------------------------------------------------------------|
+| `Layaway Plan` | Defines one company-specific commercial offer and its configurable rules.                    |
+| `Layaway`      | Orchestrates one customer reservation and stores an immutable snapshot of the selected Plan. |
+| `Layaway Item` | Stores the reserved item rows and their frozen commercial values.                            |
 
-- maximum reservation period: 30 days;
-- minimum initial deposit: 30% of the total;
-- arbitrary partial payments during the reservation period;
-- maximum of five active reserved items per customer;
-- maximum total value of USD 300 across a customer's active reservations;
-- merchandise remains reserved while the layaway is active;
-- a fully paid layaway can be completed and delivered;
-- an unpaid layaway expires at the end of the allowed period;
-- forfeiture must eventually release reserved inventory, cancel the associated Sales Order,
-  and recognize received payments appropriately instead of leaving them as unused customer credit.
+`Layaway Plan` is a regular DocType, not a Single. A company may offer several enabled Plans concurrently.
 
-These rules describe the target feature.
-They must not be treated as implemented until the corresponding phase is explicitly developed and verified.
+#### Native ERPNext DocTypes
 
-### Intended architecture
+| Native DocType                    | Layaway responsibility                                                                            |
+|-----------------------------------|---------------------------------------------------------------------------------------------------|
+| `Company`                         | Owns each Plan and provides company currency.                                                     |
+| `Customer`                        | Owns the Layaway and is the subject of active-exposure limits.                                    |
+| `Item`, `UOM`, `Warehouse`        | Provide item, quantity, unit, and physical-stock context.                                         |
+| `Price List`, `Pricing Rule`      | Produce the commercial price before it is frozen.                                                 |
+| `Terms and Conditions`            | Supplies the contractual text selected by the Plan and copied to the transaction.                 |
+| `Payment Terms Template`          | Optionally supplies formal payment milestones; it is not required for arbitrary partial payments. |
+| `Sales Order`, `Sales Order Item` | Remain the standard commercial transaction and item rows.                                         |
+| `Payment Entry`                   | Records deposits and partial payments as advances against the Sales Order.                        |
+| `Stock Reservation Entry`         | Reserves stock against submitted Sales Order items.                                               |
+| `Delivery Note`, `Sales Invoice`  | Provide standard fulfillment and billing paths when a Layaway is completed.                       |
+| `Account`                         | Identifies the company account configured for forfeited-deposit income.                           |
 
-`Layaway` is the business and orchestration document.
-It coordinates standard ERPNext documents instead of replacing them:
+The exact accounting document used to recognize forfeited income remains pending accountant approval.
 
-```text
-Layaway
-├── Sales Order
-│   └── Stock Reservation
-├── Payment Entry(s)
-└── Completion / Expiration / Forfeiture
+```mermaid
+flowchart LR
+    subgraph CUSTOM["New DocTypes — Grupo Real Tools"]
+        PLAN["Layaway Plan<br/>Company-specific rules"]
+        LAY["Layaway<br/>Orchestrator and frozen snapshot"]
+        ITEM["Layaway Item<br/>Frozen item values"]
+    end
+
+    subgraph MASTER["Native master data"]
+        COMPANY["Company"]
+        CUSTOMER["Customer"]
+        COREITEM["Item / UOM / Warehouse"]
+        PRICE["Price List / Pricing Rule"]
+        TERMS["Terms and Conditions"]
+        PAYTERMS["Payment Terms Template<br/>optional"]
+        ACCOUNT["Account"]
+    end
+
+    subgraph TRANSACTIONS["Native transactions"]
+        SO["Sales Order"]
+        SOITEM["Sales Order Item"]
+        PE["Payment Entry"]
+        SRE["Stock Reservation Entry"]
+        DN["Delivery Note"]
+        SI["Sales Invoice"]
+        ACCOUNTING["Forfeiture accounting document<br/>pending decision"]
+    end
+
+    COMPANY --> PLAN
+    TERMS --> PLAN
+    PAYTERMS -. optional .-> PLAN
+    ACCOUNT -. forfeited income .-> PLAN
+
+    PLAN -->|select and snapshot| LAY
+    COMPANY --> LAY
+    CUSTOMER --> LAY
+    LAY -->|contains| ITEM
+    COREITEM --> ITEM
+
+    LAY -->|creates and links| SO
+    ITEM -->|maps to| SOITEM
+    SO --> SOITEM
+    PRICE -->|calculate once| SO
+    SO --> SRE
+    PE -->|advance allocation| SO
+    LAY -. derives payment summary .-> PE
+
+    SO --> DN
+    SO --> SI
+    LAY -. coordinates completion .-> DN
+    LAY -. coordinates completion .-> SI
+    LAY -. human forfeiture action .-> SRE
+    LAY -. human forfeiture action .-> SO
+    LAY -. pending accounting design .-> ACCOUNTING
 ```
 
-ERPNext remains responsible for accounting, inventory, and standard transactions.
-Layaway owns the business lifecycle and its traceability.
+### Layaway Plan
+
+A Plan represents a commercial offer, not a global application setting. The intended groups are listed below; exact
+fieldnames and form layout must be created through Desk during the authorized structural phase.
+
+#### Identity and availability
+
+- Plan Name
+- Company
+- Enabled
+
+Global rules such as 30 days, a 30% deposit, five active units, or a 300-unit monetary limit become values on a specific
+Plan rather than hardcoded module behavior. Example Plans include `Standard 30 Days`, `Express 15 Days`, and
+`Preorder 45 Days`.
+
+#### Per-Layaway eligibility ranges
+
+- Minimum Layaway Amount in company currency
+- Maximum Layaway Amount in company currency
+- Minimum Layaway Quantity
+- Maximum Layaway Quantity
+
+#### Per-customer active exposure
+
+- Maximum Active Amount per Customer in company currency
+- Maximum Active Quantity per Customer
+
+Active exposure behaves like an operational reservation limit, not an ERPNext credit limit or accounting ledger. The
+initial design calculates it from active Layaways instead of introducing a separate custom ledger DocType.
+
+#### Pricing
+
+- Pricing Rule Behavior: `Apply` or `Ignore`
+
+ERPNext Price List behavior remains native. The Plan decides whether Pricing Rules participate in the initial price
+calculation. Once the Layaway reaches its price-lock point, later Pricing Rule changes must not reprice it.
+
+#### Timing and deposit
+
+- Reservation Days
+- Grace Period Days
+- Minimum Deposit Percentage
+
+The minimum deposit is calculated only after the final commercial total is known.
+
+#### Terms and accounting configuration
+
+- Terms and Conditions
+- Payment Terms Template, optional
+- Forfeited Deposit Income Account
+
+The Plan intentionally has no Default Warehouse. Each Sales Order item must use its actual warehouse from the normal
+ERPNext selling and stock context.
+
+### Layaway snapshot
+
+Each Layaway must retain both the selected Plan link and the values that governed the agreement. Editing a Plan must not
+reinterpret existing Layaways.
+
+The intended snapshot includes:
+
+- Plan name and company;
+- eligibility and customer-exposure limits;
+- reservation and grace days;
+- minimum deposit percentage and calculated amount;
+- Pricing Rule behavior;
+- Terms and Conditions link and rendered terms text;
+- optional Payment Terms Template;
+- transaction currency, company currency, and conversion rate;
+- transaction and company-currency totals;
+- item rates, discounts, amounts, quantities, UOMs, and warehouses.
+
+### Pricing, discounts, and fixed price
+
+Pricing is resolved before the deposit:
+
+1. Select the Plan, Price List, and transaction currency.
+2. Apply or ignore Pricing Rules according to the Plan.
+3. Calculate item rates, discounts, taxes, and final Grand Total through ERPNext.
+4. Validate Plan ranges and customer exposure using company-currency values.
+5. Calculate the minimum deposit from the final Grand Total.
+6. Freeze the Plan, pricing, discounts, totals, currency, and exchange-rate snapshot at the approved price-lock point.
+
+The agreed price remains fixed throughout the active Layaway lifecycle. The exact event that locks the price—before or
+after Sales Order submission and minimum-deposit receipt—remains an open workflow decision.
+
+### Multi-currency and limits
+
+A Layaway may use USD, NIO, or another valid ERPNext transaction currency. It must retain the normal ERPNext transaction
+and company-currency values:
+
+```text
+grand_total
+base_grand_total
+minimum_deposit
+base_minimum_deposit
+conversion_rate
+```
+
+Plan amount ranges and customer active-amount limits are evaluated in company currency using base values. This allows
+Layaways in different transaction currencies to consume one comparable company-specific limit.
+
+Quantity limits refer to the sum of reserved `stock_qty`, not the number of item rows or distinct SKUs. Cross-UOM
+comparability remains a pending decision for Plans that may include stock UOMs other than a common discrete unit such
+as `Nos`.
+
+### Payments and payment terms
+
+Deposits and partial payments remain native `Payment Entry` documents allocated to the submitted Sales Order.
+`Layaway` derives Paid Amount and Outstanding Amount from that approved reference path; it must not introduce a custom
+payment child table or accounting ledger.
+
+`Terms and Conditions` contains the contractual Layaway text. `Payment Terms Template` is optional and should be used
+only when a Plan defines formal payment milestones. A flexible Layaway that accepts arbitrary partial payments does not
+require a fixed installment schedule.
+
+After a Layaway becomes `Forfeited`, no new payment may reference it or its dead Sales Order. Money received afterward
+must be recorded as a separate customer advance for another purpose.
+
+### Lifecycle model
+
+Lifecycle, payment, and fulfillment represent different dimensions and must not be collapsed into one ambiguous status
+field.
+
+```text
+Lifecycle Status:
+Draft → Awaiting Deposit → Active → Completed
+                           └──────→ Expired → Forfeited
+Draft / Awaiting Deposit / Active / Expired → Cancelled
+
+Payment Status, derived:
+Unpaid → Partially Paid → Paid
+
+Fulfillment Status, derived:
+Unreserved → Reserved → Ready for Pickup → Delivered
+                        └───────────────→ Released
+```
+
+Reaching the expiration date makes the Layaway overdue. The grace period determines when it becomes eligible for
+forfeiture. Releasing stock, cancelling the Sales Order, and recognizing forfeited income require an explicit human
+action; elapsed time alone must not perform those destructive operations.
+
+`Forfeited`, `Completed`, and `Cancelled` are terminal lifecycle states.
+
+### Intended operational flow
+
+```mermaid
+flowchart TD
+    A["Create Draft Layaway"] --> B["Select Company, Customer, and Layaway Plan"]
+    B --> C["Resolve and snapshot Plan rules"]
+    C --> D["Add and price items"]
+    D --> E["Calculate discounts, taxes, and Grand Total"]
+    E --> F["Validate ranges and company-currency exposure"]
+    F --> G["Calculate minimum deposit"]
+    G --> H["Execute approved price-lock, Sales Order,<br/>and deposit sequence"]
+    H --> I["Submitted Sales Order and minimum deposit received"]
+    I --> J["Activate Layaway and reserve stock"]
+
+    J --> K{"Active lifecycle"}
+    K -->|partial payment| L["Payment Entry against Sales Order"]
+    L --> K
+    K -->|fully paid| M["Paid / Ready for Pickup"]
+    M -->|human completion| N["Delivery Note and Sales Invoice"]
+    N --> O["Completed"]
+
+    K -->|expiration date| P["Expired"]
+    P -->|grace elapsed| Q["Eligible for Forfeiture"]
+    Q -->|human waits| P
+    Q -->|human forfeits| R["Release stock, cancel order,<br/>and recognize forfeited income"]
+    R --> S["Forfeited — terminal"]
+```
+
+This flow is approved architectural direction, not implemented behavior. Steps that depend on pending decisions must be
+resolved before their implementation phase.
 
 ### Development phases
 
-#### Phase 1 — Visual structure
+#### Phase 1 — Structural foundation
 
-Create the DocTypes and establish the Desk form structure. Fields may remain structural placeholders.
-No transactional automation or business-rule enforcement belongs in this phase.
+Create and arrange the following through the Frappe DocType UI:
 
-#### Phase 2 — ERPNext links
+- `Layaway Plan`;
+- `Layaway`;
+- `Layaway Item`.
 
-Connect Layaway to Customer, Item, Sales Order, Payment Entry, stock reservation,
-and other standard documents after their ownership and lifecycle rules are approved.
+The forms must represent the intended architecture without transactional automation or rule enforcement.
 
-#### Phase 3 — Business logic
+#### Phase 2 — Native ERPNext links
 
-Implement limits, calculations, state transitions, expiration, reservation, completion,
-and accounting actions only after their detailed workflows are approved.
+Connect Layaway to Customer, Company, Item, Terms and Conditions, optional Payment Terms Template, Sales Order,
+Payment Entry, and Stock Reservation Entry after ownership, retry, cancellation, and recovery rules are approved.
 
-### Phase 1 DocTypes
+#### Phase 3 — Business behavior
 
-#### Layaway
+Implement Plan resolution, eligibility, exposure, calculations, price locking, state transitions, expiration, grace,
+completion, and forfeiture only after the relevant open decisions are resolved.
 
-The main orchestration document.
+### Phase 1 form intent
 
-##### Customer
-
-- Customer
-- Customer Name
-- Posting Date
-- Expiration Date
-
-##### Reservation
-
-- Status
-- Sales Order
-- Company
-- Currency
-
-The structural status options are:
-
-- Draft
-- Awaiting Deposit
-- Active
-- Partially Paid
-- Paid
-- Ready for Pickup
-- Completed
-- Expired
-- Forfeited
-- Cancelled
-
-Phase 1 does not implement a state machine.
-
-##### Items
-
-The `Layaway Item` child table should appear prominently on the form.
-Standard Frappe table behavior is sufficient for Phase 1.
-
-##### Payment summary
-
-The form should clearly show:
-
-- Grand Total
-- Minimum Deposit
-- Paid Amount
-- Outstanding Amount
-
-Example target presentation:
+The Layaway form should present an operational hierarchy:
 
 ```text
-Total              $200.00
-Minimum Deposit     $60.00
-Paid                $80.00
-Outstanding        $120.00
-```
-
-These may initially be normal fields or placeholders. Payment aggregation is a future-phase concern.
-
-##### Time and expiration
-
-Reserve a prominent area for:
-
-- Expiration Date
-- Days Remaining
-
-The long-term design should make expiration immediately visible, for example:
-
-```text
-Expires
-October 21, 2026
-
-29 days remaining
-```
-
-Phase 1 does not calculate expiration or schedule expiration processing.
-
-##### Payments
-
-Reserve an intentional location for payment history.
-Do not create a custom accounting child table that duplicates Payment Entry.
-Future payment records must remain real ERPNext `Payment Entry` documents.
-
-##### Terms
-
-Include a `Terms and Conditions` field intended to use ERPNext's standard terms mechanism.
-External documentation synchronization is outside the scope of this phase.
-
-##### Completion and audit information
-
-Reserve normally hidden or read-only fields for:
-
-- Completed On
-- Expired On
-- Forfeited On
-- Forfeiture Document
-
-Phase 1 does not implement forfeiture accounting.
-
-#### Layaway Item
-
-The child DocType is intended to contain:
-
-- Item Code
-- Item Name
-- Description
-- Quantity
-- UOM
-- Rate
-- Amount
-- Warehouse
-
-Phase 1 does not reserve stock.
-
-#### Layaway Settings
-
-A Single DocType will hold configurable rules so later phases do not hardcode business policy.
-
-##### Reservation rules
-
-- Default Reservation Days — default 30
-- Minimum Deposit Percentage — default 30
-- Maximum Active Items per Customer — default 5
-- Maximum Active Amount per Customer — default 300
-
-##### Defaults
-
-- Default Warehouse
-- Default Terms and Conditions
-
-##### Forfeiture
-
-- Forfeited Deposit Income Account
-
-Phase 1 creates a home for these values but does not enforce them.
-
-### Form hierarchy
-
-The Desk experience should feel like an operational salesperson screen rather than a raw database record:
-
-```text
-CUSTOMER + STATUS + EXPIRATION
+CUSTOMER + PLAN + LIFECYCLE STATUS + EXPIRATION
 
 ITEMS
 
-TOTAL             $XXX
-MINIMUM DEPOSIT   $XXX
-PAID              $XXX
-OUTSTANDING       $XXX
+GRAND TOTAL          XXX
+MINIMUM DEPOSIT      XXX
+PAID AMOUNT          XXX
+OUTSTANDING AMOUNT   XXX
 
-PAYMENT HISTORY
+PAYMENT HISTORY / RELATED DOCUMENTS
 
-RELATED DOCUMENTS / AUDIT
+TERMS / COMPLETION / EXPIRATION / FORFEITURE AUDIT
 ```
 
-Use standard Frappe sections, columns, tables, read-only fields, and declarative dependencies whenever possible.
-All fields and layout changes must be made in the DocType UI. Do not construct or rearrange the form in JavaScript.
+The item table should reserve a place for Item, Item Name, Description, Quantity, Stock Quantity, UOM, Rate, Discount,
+Amount, and Warehouse. Summary and audit fields may remain structural placeholders in Phase 1.
 
-### Explicit Phase 1 exclusions
-
-Do not implement any of the following during Phase 1:
-
-- Payment Entry creation or aggregation;
-- Sales Order creation or cancellation;
-- stock reservation or release;
-- customer active-item or active-amount limits;
-- minimum-deposit enforcement;
-- expiration enforcement or scheduled jobs;
-- forfeiture or accounting entries;
-- Sales Invoice creation;
-- notifications or WhatsApp;
-- document synchronization;
-- a state machine;
-- reports.
+Payment history must be a visual location for related native Payment Entries, not a custom payment table.
 
 ### Phase 1 definition of done
 
 Phase 1 is complete when:
 
-- `Layaway`, `Layaway Item`, and `Layaway Settings` exist;
-- the Layaway form has a clear operational hierarchy;
-- items can be entered;
-- financial-summary fields are visible;
-- expiration has a prominent location;
-- payment history has an intentional placeholder;
-- terms and lifecycle audit fields have intentional locations;
-- settings contain the configurable business rules;
+- `Layaway Plan`, `Layaway`, and `Layaway Item` exist;
+- both main forms have a clear operational layout;
+- item rows can be entered;
+- transaction and company-currency summary fields have intentional locations;
+- deposit, expiration, grace, payment summary, terms, related documents, and audit information have intentional places;
 - the DocTypes install or migrate correctly;
 - structural tests pass;
-- no ERPNext transactional automation or Layaway business logic has been introduced.
+- no Sales Order, Payment Entry, stock reservation, expiration, completion, or accounting automation has been added.
+
+## Backlog
+
+The following decisions remain open and do not authorize implementation:
+
+- determine the exact price-lock event relative to Sales Order submission and minimum-deposit receipt;
+- decide whether payments remain allowed after the grace period ends but before a human executes forfeiture;
+- define whether a linked Payment Terms Template is enforceable or informational for Layaway;
+- define cross-UOM behavior for quantity limits;
+- approve the completion sequence between Delivery Note and Sales Invoice;
+- obtain accounting approval for the forfeiture document, accounts, cancellation sequence, and treatment of received
+  advances;
+- decide whether the non-destructive transition to `Expired` is automatic or manual;
+- define Plan availability controls such as default selection and effective dates if operationally required.

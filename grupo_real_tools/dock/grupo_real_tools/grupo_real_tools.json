@@ -12,9 +12,17 @@
    "link_to": "Payment Settlement",
    "link_type": "Sidebar",
    "title": "Settlement"
+  },
+  {
+   "added": 1,
+   "hidden": 0,
+   "icon": "asset-hand-soft",
+   "link_to": "Layaway",
+   "link_type": "Sidebar",
+   "title": "Layaway"
   }
  ],
- "modified": "2026-10-14 16:48:28.596465",
+ "modified": "2026-10-17 09:00:02.373100",
  "modified_by": "Administrator",
  "name": "grupo_real_tools",
  "owner": "Administrator",
