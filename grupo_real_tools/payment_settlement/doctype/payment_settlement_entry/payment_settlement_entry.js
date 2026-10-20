@@ -17,44 +17,24 @@ frappe.ui.form.on("Payment Settlement Entry", {
 		if (frm.is_new() || frm.doc.docstatus !== 0)
 			return;
 
-		frm.add_custom_button(__('Get Entries'), () => {
-			// The server replaces the references; mark the form dirty so they can be saved.
-			return frm.events.fetch_references(frm).then(() => frm.dirty());
-		});
+		frm.add_custom_button(__('Get Entries'), () => frm.events.fetch_references(frm).then(() => frm.dirty()));
 	},
 
-	company(frm) {
-		// Clearing the Template also resets the rows copied from its previous company.
-		frm.set_value('template', '');
-	},
+	// The 'Template' replaces accounts and components; reload references for those mappings.
+	company: (frm) => frm.set_value('template', ''),
+	template: (frm) => frm.call('fetch_template_data').then(() => frm.events.fetch_references(frm)),
 
-	template(frm) {
-		// The Template replaces account and component rows; reload references for those mappings.
-		return frm.call('fetch_template_data').then(() => {
-			frm.events.fetch_references(frm);
-		});
-	},
-
-	from_date(frm) {
-		frm.events.fetch_references(frm);
-	},
-
-	to_date(frm) {
-		frm.events.fetch_references(frm);
-	},
+	from_date: (frm) => frm.events.fetch_references(frm),
+	to_date: (frm) => frm.events.fetch_references(frm),
 
 	make_difference(frm) {
 		// The server appends the adjustment row; mark the form dirty so it can be saved.
 		frappe.prompt({
+				reqd: 1,
 				fieldname: 'adjustment_type',
 				fieldtype: 'Select',
 				label: __('Select Difference Account'),
-				reqd: 1,
-				options: [
-					'Round Off',
-					'Exchange Gain Or Loss',
-					'Write Off'
-				]
+				options: ['Round Off', 'Exchange Gain Or Loss', 'Write Off']
 			},
 			({adjustment_type}) => frm.call('make_difference', {adjustment_type}).then(() => frm.dirty()),
 			__('Make Difference Entry'),
@@ -74,12 +54,12 @@ frappe.ui.form.on("Payment Settlement Entry", {
 });
 
 frappe.ui.form.on('Payment Settlement Entry Reference', {
-	references_remove(frm) {
-		return frm.call('calculate');
-	},
+	references_remove: frappe.utils.debounce((frm) => frm.call('calculate'), 150),
 });
 
 frappe.ui.form.on('Payment Settlement Entry Component', {
+	account: (frm) => frm.call('set_bank_accounts'),
+	exchange_rate: (frm) => frm.call('calculate'), // Recalculate base amounts and settlement residuals after a rate change.
 	before_components_remove(frm, cdt, cdn) {
 		const row = locals[cdt][cdn];
 
@@ -87,8 +67,5 @@ frappe.ui.form.on('Payment Settlement Entry Component', {
 			frappe.throw(__('Cannot delete {0}', [`${__(row.type)}: ${row.account}`]));
 		}
 	},
-	components_remove: frappe.utils.debounce((frm) => frm.call('calculate'), 250), // Bulk delete fires once per row; recalculate after the grid settles.
-	exchange_rate(frm) {
-		return frm.call('calculate'); // Recalculate base amounts and settlement residuals after a rate change.
-	},
+	components_remove: frappe.utils.debounce((frm) => frm.call('calculate'), 150),
 });
