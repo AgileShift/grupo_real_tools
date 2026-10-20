@@ -1,5 +1,5 @@
 import frappe
-from frappe.query_builder import Tuple
+from frappe.query_builder import Case, Tuple
 from frappe.query_builder.custom import ConstantColumn
 
 
@@ -16,7 +16,7 @@ def _get_payment_entry_references(company: str, accounts, from_date, to_date):
 			payment_entry.party,
 			payment_entry.party_name,
 			payment_entry.mode_of_payment,
-			payment_entry.paid_to_account_currency.as_('currency'),
+			payment_entry.paid_to.as_('account'), payment_entry.paid_to_account_currency.as_('currency'),
 			payment_entry.target_exchange_rate.as_('exchange_rate'),
 			payment_entry.received_amount.as_('amount'),
 			payment_entry.base_received_amount.as_('base_amount'),
@@ -34,16 +34,19 @@ def _get_payment_entry_references(company: str, accounts, from_date, to_date):
 
 
 def _get_sales_invoice_payment_references(company: str, accounts, from_date, to_date):
-	sales_invoice =frappe.qb.DocType('Sales Invoice')
+	account = frappe.qb.DocType('Account')
+	sales_invoice = frappe.qb.DocType('Sales Invoice')
 	sales_invoice_payment = frappe.qb.DocType('Sales Invoice Payment')
+	company_currency = frappe.get_cached_value('Company', company, 'default_currency')
 
 	references = (
 		frappe.qb.from_(sales_invoice)
-		.inner_join(sales_invoice_payment)
-		.on(
+		.inner_join(sales_invoice_payment).on(
 			(sales_invoice_payment.parent == sales_invoice.name)
 			& (sales_invoice_payment.parenttype == 'Sales Invoice')
-		).select(
+		)
+		.inner_join(account).on(sales_invoice_payment.account == account.name)
+		.select(
 			ConstantColumn('Sales Invoice').as_('reference_doctype'),
 			sales_invoice.name.as_('reference_name'),
 			sales_invoice_payment.name.as_('reference_row_name'),
@@ -52,9 +55,14 @@ def _get_sales_invoice_payment_references(company: str, accounts, from_date, to_
 			sales_invoice.customer.as_('party'),
 			sales_invoice.customer_name.as_('party_name'),
 			sales_invoice_payment.mode_of_payment,
-			sales_invoice.currency,
-			sales_invoice.conversion_rate.as_('exchange_rate'),
-			sales_invoice_payment.amount,
+			sales_invoice_payment.account, account.account_currency.as_('currency'),
+
+			# Invoice payments use invoice currency; normalize amounts and rates to the receiving account currency.
+			Case().when(account.account_currency == company_currency, 1)
+			.else_(sales_invoice.conversion_rate).as_('exchange_rate'),
+			Case().when(account.account_currency == company_currency, sales_invoice_payment.base_amount)
+			.else_(sales_invoice_payment.amount).as_('amount'),
+
 			sales_invoice_payment.base_amount,
 			sales_invoice_payment.reference_no,
 		).where(
