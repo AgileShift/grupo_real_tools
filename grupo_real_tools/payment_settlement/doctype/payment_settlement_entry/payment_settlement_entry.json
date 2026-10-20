@@ -20,6 +20,7 @@
   "section_break_juym",
   "references",
   "section_break_ltoe",
+  "column_break_qskb",
   "components",
   "section_break_ktbk",
   "total_debit",
@@ -92,7 +93,6 @@
    "allow_bulk_edit": 1,
    "fieldname": "components",
    "fieldtype": "Table",
-   "label": "Components",
    "options": "Payment Settlement Entry Component",
    "reqd": 1
   },
@@ -104,7 +104,6 @@
   {
    "fieldname": "references",
    "fieldtype": "Table",
-   "label": "References",
    "options": "Payment Settlement Entry Reference",
    "reqd": 1
   },
@@ -130,7 +129,6 @@
   {
    "fieldname": "accounts",
    "fieldtype": "Table",
-   "label": "Accounts",
    "options": "Payment Settlement Entry Account",
    "read_only": 1,
    "reqd": 1
@@ -189,11 +187,15 @@
    "print_hide": 1,
    "reqd": 1,
    "set_only_once": 1
+  },
+  {
+   "fieldname": "column_break_qskb",
+   "fieldtype": "Column Break"
   }
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2026-10-14 16:42:17.559255",
+ "modified": "2026-10-20 17:43:31.092411",
  "modified_by": "Administrator",
  "module": "Payment Settlement",
  "name": "Payment Settlement Entry",

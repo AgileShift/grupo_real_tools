@@ -2,8 +2,8 @@ import frappe
 from erpnext.setup.utils import get_exchange_rate
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import flt, getdate
-from .references import _get_payment_entry_references, _get_sales_invoice_payment_references
+from frappe.utils import flt
+from .references import get_references, get_settled_references
 
 
 class PaymentSettlementEntry(Document):
@@ -49,8 +49,7 @@ class PaymentSettlementEntry(Document):
 			company=self.company,
 			posting_date=self.posting_date,
 			voucher_type='Journal Entry',
-			multi_currency=True,
-			custom_remark=True,
+			multi_currency=True, custom_remark=True,
 			remark=_('Payment Settlement Entry') + f': {self.name}',
 		)
 
@@ -182,37 +181,15 @@ class PaymentSettlementEntry(Document):
 
 	@frappe.whitelist(allow_guest=False)
 	def fetch_references(self):
-		""" Get Reference Docs """
-		from_date = getdate(self.from_date)
-		to_date = getdate(self.to_date)
-
-		accounts = [(account.mode_of_payment, account.clearing_account) for account in self.accounts]
-
-		references = (
-			_get_payment_entry_references(self.company, accounts, from_date, to_date) +
-			_get_sales_invoice_payment_references(self.company, accounts, from_date, to_date)
-		) if accounts else []
-
-		candidate_names = {row.reference_name for row in references}
-		settled = {
-			(reference_doctype, reference_name, reference_row_name or '')
-			for reference_doctype, reference_name, reference_row_name in frappe.get_all(
-				'Payment Settlement Entry Reference',
-				filters={'docstatus': 1, 'parenttype': self.doctype, 'reference_name': ['in', candidate_names]},
-				fields=['reference_doctype', 'reference_name', 'reference_row_name'], as_list=True
-			)
-		} if candidate_names else set()  # Query only matching References
-
-		self.set('references', [
-			row for row in references
-			if (row.reference_doctype, row.reference_name, row.reference_row_name or '') not in settled
-		])
+		"""Replace the reference snapshot and recalculate the Settlement."""
+		self.set('references', get_references(self.company, self.accounts, self.from_date, self.to_date))
 		self.calculate()
 
 	@frappe.whitelist(allow_guest=False)
 	def calculate(self):
 		self._validate_required_components()
 		self._validate_component_calculation_methods()
+		self.set_bank_accounts()
 		self._calculate_clearing_components()
 		self._calculate_percentage_components()
 		self._set_component_exchange_rates()
@@ -222,7 +199,29 @@ class PaymentSettlementEntry(Document):
 		self.total_debit = flt(sum(row.debit for row in self.components), self.precision('total_debit'))
 		self.total_credit = flt(sum(row.credit for row in self.components), self.precision('total_credit'))
 
-	def _validate_required_components(self):
+	@frappe.whitelist(allow_guest=False)
+	def set_bank_accounts(self) -> None:
+		for component in self.components:
+			if component.type != 'Manual':
+				continue
+
+			component.bank_account = frappe.db.get_value('Bank Account', {
+				'company': self.company, 'is_company_account': 1, 'account': component.account, 'disabled': 0
+			}) if component.account and self.company else None
+
+	def _validate_settled_references(self) -> None:
+		candidate_names = {reference.reference_name for reference in self.references}
+		settled = get_settled_references(candidate_names)
+
+		for reference in self.references:
+			key = (reference.reference_doctype, reference.reference_name, reference.reference_row_name or '')
+
+			if key in settled:
+				frappe.throw(
+					_('{0} was already settled in {1}.').format(reference.reference_name, settled[key])
+				)
+
+	def _validate_required_components(self) -> None:
 		present = {(component.type, component.account) for component in self.components}
 
 		for account in self.accounts:
@@ -232,7 +231,7 @@ class PaymentSettlementEntry(Document):
 			if ('Settlement', account.settlement_account) not in present:
 				frappe.throw(_('Missing settlement component for {0}.').format(account.settlement_account))
 
-	def _validate_component_calculation_methods(self):
+	def _validate_component_calculation_methods(self) -> None:
 		allowed_methods = {
 			'Clearing': ('Automatic',),
 			'Settlement': ('Automatic', 'Manual'),
@@ -244,44 +243,14 @@ class PaymentSettlementEntry(Document):
 			if component.calculation_method not in allowed_methods.get(component.type, ()):
 				frappe.throw(_('Invalid Option'), title=_('Calculation Method'))
 
-	def _validate_settled_references(self):
-		reference_keys = {(
-			reference.reference_doctype,
-			reference.reference_name,
-			reference.reference_row_name or '',
-		) for reference in self.references}
-
-		settled_references = frappe.db.get_all(
-			'Payment Settlement Entry Reference',
-			filters={
-				'reference_name': ['in', {reference.reference_name for reference in self.references}],
-				'docstatus': 1,
-				'parent': ['!=', self.name], 'parenttype': self.doctype,
-			},
-			fields=['reference_doctype', 'reference_name', 'reference_row_name', 'parent'],
-		)
-
-		for reference in settled_references:
-			key = (
-				reference.reference_doctype,
-				reference.reference_name,
-				reference.reference_row_name or '',
-			)
-
-			if key in reference_keys:
-				frappe.throw(
-					_('{0} was already settled in {1}.').format(
-						reference.reference_name, reference.parent
-					)
-				)
-
 	def _calculate_clearing_components(self):
+		references_by_mode = {}
+
+		for reference in self.references:
+			references_by_mode.setdefault(reference.mode_of_payment, []).append(reference)
+
 		for account in self.accounts:
-			references = [
-				reference
-				for reference in self.references
-				if reference.mode_of_payment == account.mode_of_payment
-			]  # Get only References related to Clearing Account(by mode of payment)
+			references = references_by_mode.get(account.mode_of_payment, [])
 
 			account.reference_count = len(references)
 			account.clearing_amount = sum(reference.amount for reference in references)
@@ -330,19 +299,21 @@ class PaymentSettlementEntry(Document):
 		rates = {}
 
 		for component in self.components:
-			if component.type == 'Clearing':  # Auto Calculate -> is an aggregate of all the references
+			if component.account_currency == company_currency:
+				component.exchange_rate = 1
+			elif component.type == 'Clearing':  # Preserve the aggregate rate of the original collections.
 				component.exchange_rate = (
 					component.credit / component.credit_in_account_currency if component.credit_in_account_currency else 0
 				)
-				continue
-			elif component.account_currency == company_currency:
-				component.exchange_rate = 1
 			elif not component.exchange_rate:
 				if component.account_currency not in rates:
 					rates[component.account_currency] = get_exchange_rate(
 						component.account_currency, company_currency, self.posting_date
 					)
 				component.exchange_rate = rates[component.account_currency]
+
+			if component.type == 'Clearing':
+				continue  # Keep the source base amounts instead of recalculating historical collections.
 
 			# Calculate internal component values
 			self._calculate_component_base_amounts(component)
@@ -372,7 +343,10 @@ class PaymentSettlementEntry(Document):
 				if component.calculation_method == 'Manual':
 					previous = settlement_components.get(component.account)
 					if previous and previous.calculation_method == 'Manual':
-						frappe.throw(_('Only one row can override {0}.').format(component.account))
+						frappe.throw(
+							_('Duplicate {0} found in the table').format(component.account),
+							title=f'{_("Settlement")} ({_("Manual")})',
+						)
 					settlement_components[component.account] = component
 				else:
 					settlement_components.setdefault(component.account, component)
@@ -436,4 +410,4 @@ class PaymentSettlementEntry(Document):
 			# Base amounts may leave an exchange difference; do not alter the cash balance to hide it.
 			self._calculate_component_base_amounts(component)
 
-# 426
+# 416
