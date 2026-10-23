@@ -409,5 +409,3 @@ class PaymentSettlementEntry(Document):
 				component.credit_in_account_currency = max(-balance, 0)
 			# Base amounts may leave an exchange difference; do not alter the cash balance to hide it.
 			self._calculate_component_base_amounts(component)
-
-# 416
