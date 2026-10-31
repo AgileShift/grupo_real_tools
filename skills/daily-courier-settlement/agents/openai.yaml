@@ -1,0 +1,4 @@
+interface:
+  display_name: "Daily Courier Settlement"
+  short_description: "Read one WhatsApp day and record its settlement in Excel"
+  default_prompt: "Use $daily-courier-settlement to settle one day from WhatsApp and record it in the working Excel; ask if the date, chat, workbook, or amounts are unclear."
