@@ -3,7 +3,7 @@
  "creation": "2026-10-06 11:03:37.104591",
  "docstatus": 0,
  "doctype": "Sidebar",
- "header_icon": "money-coins-1",
+ "header_icon": "",
  "idx": 0,
  "items": [
   {
@@ -230,7 +230,7 @@
   }
  ],
  "merged_from": "[\"Payment Settlement\"]",
- "modified": "2026-10-16 09:41:51.147236",
+ "modified": "2026-11-09 21:11:01.966138",
  "modified_by": "Administrator",
  "module": "Payment Settlement",
  "name": "Payment Settlement",

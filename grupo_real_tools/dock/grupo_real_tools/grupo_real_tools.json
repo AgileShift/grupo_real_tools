@@ -20,9 +20,17 @@
    "link_to": "Layaway",
    "link_type": "Sidebar",
    "title": "Layaway"
+  },
+  {
+   "added": 1,
+   "hidden": 0,
+   "icon": "shelf-rack-duotone",
+   "link_to": "Procurement",
+   "link_type": "Sidebar",
+   "title": "Procurement"
   }
  ],
- "modified": "2026-10-17 09:00:02.373100",
+ "modified": "2026-11-09 21:11:59.058917",
  "modified_by": "Administrator",
  "name": "grupo_real_tools",
  "owner": "Administrator",
