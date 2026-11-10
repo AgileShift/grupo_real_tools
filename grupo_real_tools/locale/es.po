@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-23 11:16-0745\n"
+"POT-Creation-Date: 2026-11-09 21:21-0745\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -25,7 +25,7 @@ msgstr ""
 
 #. Option for the 'Type' (Select) field in DocType 'Payment Settlement Entry
 #. Component'
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_component/payment_settlement_entry_component.json:200
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_component/payment_settlement_entry_component.json:201
 msgid "Adjustment"
 msgstr ""
 
@@ -50,9 +50,9 @@ msgstr ""
 #. Label of the calculation_method (Select) field in DocType 'Payment
 #. Settlement Entry Component'
 #. Settlement Template Component'
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:244
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_component/payment_settlement_entry_component.json:50
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_template_component/payment_settlement_template_component.json:33
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:253
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_component/payment_settlement_entry_component.json:51
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_template_component/payment_settlement_template_component.json:34
 msgid "Calculation Method"
 msgstr ""
 
@@ -63,13 +63,13 @@ msgstr ""
 
 #. Option for the 'Type' (Select) field in DocType 'Payment Settlement Entry
 #. Component'
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_component/payment_settlement_entry_component.json:200
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_component/payment_settlement_entry_component.json:201
 msgid "Clearing"
 msgstr ""
 
 #. Label of the section_break_fbkr (Section Break) field in DocType 'Payment
 #. Settlement Entry'
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.json:127
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.json:130
 msgid "Clearing & Settlement Accounts"
 msgstr ""
 
@@ -103,7 +103,7 @@ msgstr ""
 
 #. Label of the section_break_juym (Section Break) field in DocType 'Payment
 #. Settlement Entry'
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.json:102
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.json:105
 msgid "Clearing References"
 msgstr ""
 
@@ -114,21 +114,21 @@ msgstr ""
 
 #. Label of the credit_in_account_currency (Currency) field in DocType 'Payment
 #. Settlement Entry Component'
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_component/payment_settlement_entry_component.json:166
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_component/payment_settlement_entry_component.json:167
 msgid "Credit in Account Currency"
 msgstr ""
 
 #. Label of the debit_in_account_currency (Currency) field in DocType 'Payment
 #. Settlement Entry Component'
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_component/payment_settlement_entry_component.json:154
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_component/payment_settlement_entry_component.json:155
 msgid "Debit in Account Currency"
 msgstr ""
 
 #. Option for the 'Calculation Method' (Select) field in DocType 'Payment
 #. Settlement Entry Component'
 #. Settlement Template Component'
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_component/payment_settlement_entry_component.json:51
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_template_component/payment_settlement_template_component.json:34
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_component/payment_settlement_entry_component.json:52
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_template_component/payment_settlement_template_component.json:35
 msgid "Fixed Amount"
 msgstr ""
 
@@ -142,18 +142,26 @@ msgstr ""
 #. Label of a Sidebar Item
 #: grupo_real_tools/layaway/doctype/layaway/layaway.json:35
 #: grupo_real_tools/layaway/sidebar/layaway/layaway.json:18
-#: grupo_real_tools/layaway/sidebar/layaway/layaway.json:167
+#: grupo_real_tools/layaway/sidebar/layaway/layaway.json:199
 msgid "Layaway"
 msgstr ""
 
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:229
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:238
 #, python-brace-format
 msgid "Missing clearing component for {0}."
 msgstr ""
 
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:232
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:241
 #, python-brace-format
 msgid "Missing settlement component for {0}."
+msgstr ""
+
+#. Option for the 'Based On' (Select) field in DocType 'Payment Settlement
+#. Entry Component'
+#. Template Component'
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_component/payment_settlement_entry_component.json:233
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_template_component/payment_settlement_template_component.json:97
+msgid "On Gross Amount"
 msgstr ""
 
 #. Title of a Sidebar
@@ -163,8 +171,8 @@ msgstr ""
 
 #. Name of a DocType
 #. Label of a Sidebar Item
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.json:201
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:53
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.json:220
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:55
 #: grupo_real_tools/payment_settlement/sidebar/payment_settlement/payment_settlement.json:18
 msgid "Payment Settlement Entry"
 msgstr ""
@@ -175,7 +183,7 @@ msgid "Payment Settlement Entry Account"
 msgstr ""
 
 #. Name of a DocType
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_component/payment_settlement_entry_component.json:231
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_component/payment_settlement_entry_component.json:243
 msgid "Payment Settlement Entry Component"
 msgstr ""
 
@@ -186,7 +194,7 @@ msgstr ""
 
 #. Name of a DocType
 #. Label of a Sidebar Item
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_template/payment_settlement_template.json:73
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_template/payment_settlement_template.json:81
 #: grupo_real_tools/payment_settlement/sidebar/payment_settlement/payment_settlement.json:128
 msgid "Payment Settlement Template"
 msgstr ""
@@ -197,7 +205,7 @@ msgid "Payment Settlement Template Account"
 msgstr ""
 
 #. Name of a DocType
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_template_component/payment_settlement_template_component.json:95
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_template_component/payment_settlement_template_component.json:107
 msgid "Payment Settlement Template Component"
 msgstr ""
 
@@ -233,19 +241,19 @@ msgstr ""
 msgid "Reference Row Name"
 msgstr ""
 
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:277
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:381
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:295
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:419
 #, python-brace-format
 msgid "Row {0}: Apply To does not belong to this settlement."
 msgstr ""
 
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:359
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:394
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:397
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:432
 #, python-brace-format
 msgid "Row {0}: a valid exchange rate is required."
 msgstr ""
 
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:387
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:425
 #, python-brace-format
 msgid "Row {0}: select Apply To because the settlement has multiple destinations."
 msgstr ""
@@ -258,8 +266,8 @@ msgstr ""
 
 #. Option for the 'Type' (Select) field in DocType 'Payment Settlement Entry
 #. Component'
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:348
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_component/payment_settlement_entry_component.json:200
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:386
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry_component/payment_settlement_entry_component.json:201
 msgid "Settlement"
 msgstr ""
 
@@ -281,7 +289,7 @@ msgstr ""
 
 #. Label of the section_break_ltoe (Section Break) field in DocType 'Payment
 #. Settlement Entry'
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.json:90
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.json:93
 msgid "Settlement Components"
 msgstr ""
 
@@ -299,12 +307,12 @@ msgstr ""
 msgid "Subtotal"
 msgstr ""
 
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:76
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:82
 #, python-brace-format
 msgid "The Journal Entry calculates different amounts for {0}. Check the exchange rate and precision."
 msgstr ""
 
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:89
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:95
 msgid "The linked Journal Entry is neither submitted nor cancelled."
 msgstr ""
 
@@ -328,7 +336,7 @@ msgstr ""
 msgid "Transporter Invoice No"
 msgstr ""
 
-#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:221
+#: grupo_real_tools/payment_settlement/doctype/payment_settlement_entry/payment_settlement_entry.py:230
 #, python-brace-format
 msgid "{0} was already settled in {1}."
 msgstr ""
