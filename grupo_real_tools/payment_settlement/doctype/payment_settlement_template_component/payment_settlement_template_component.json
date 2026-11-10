@@ -11,6 +11,7 @@
   "column_break_poui",
   "calculation_method",
   "add_deduct_tax",
+  "based_on",
   "rate",
   "section_break_imjr",
   "apply_to"
@@ -84,12 +85,23 @@
   {
    "fieldname": "section_break_imjr",
    "fieldtype": "Section Break"
+  },
+  {
+   "default": "On Gross Amount",
+   "depends_on": "eval:doc.calculation_method == \"Percentage\"",
+   "fieldname": "based_on",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Based On",
+   "mandatory_depends_on": "eval:doc.calculation_method == \"Percentage\"",
+   "options": "\nOn Gross Amount\nOn Previous Row Total",
+   "read_only_depends_on": "eval:doc.calculation_method != \"Percentage\""
   }
  ],
  "grid_page_length": 50,
  "istable": 1,
  "links": [],
- "modified": "2026-10-15 13:37:38.219286",
+ "modified": "2026-10-31 14:07:26.489862",
  "modified_by": "Administrator",
  "module": "Payment Settlement",
  "name": "Payment Settlement Template Component",

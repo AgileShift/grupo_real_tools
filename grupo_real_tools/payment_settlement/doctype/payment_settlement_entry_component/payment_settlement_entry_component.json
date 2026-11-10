@@ -7,6 +7,7 @@
  "engine": "InnoDB",
  "field_order": [
   "account_section",
+  "type",
   "account",
   "bank_account",
   "column_break_gxjx",
@@ -15,6 +16,7 @@
   "column_break_ibso",
   "calculation_method",
   "add_deduct_tax",
+  "based_on",
   "rate",
   "section_break_eidy",
   "column_break_jmik",
@@ -27,8 +29,7 @@
   "column_break_lfwh",
   "user_remark",
   "column_break_zvby",
-  "apply_to",
-  "type"
+  "apply_to"
  ],
  "fields": [
   {
@@ -49,7 +50,7 @@
    "in_list_view": 1,
    "label": "Calculation Method",
    "options": "\nAutomatic\nManual\nPercentage\nFixed Amount",
-   "read_only_depends_on": "eval:[\"Clearing\", \"Adjustment\"].includes(doc.type)",
+   "read_only_depends_on": "eval:[\"Clearing\", \"Component\", \"Adjustment\"].includes(doc.type)",
    "reqd": 1
   },
   {
@@ -62,7 +63,7 @@
    "mandatory_depends_on": "eval:[\"Percentage\", \"Fixed Amount\"].includes(doc.calculation_method)",
    "non_negative": 1,
    "precision": "2",
-   "read_only_depends_on": "eval:![\"Percentage\", \"Fixed Amount\"].includes(doc.calculation_method)"
+   "read_only_depends_on": "eval:doc.type == \"Component\" || ![\"Percentage\", \"Fixed Amount\"].includes(doc.calculation_method)"
   },
   {
    "columns": 1,
@@ -101,9 +102,10 @@
    "fieldname": "account_currency",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Currency",
+   "label": "Account Currency",
    "options": "Currency",
-   "read_only": 1
+   "read_only": 1,
+   "reqd": 1
   },
   {
    "fieldname": "column_break_jmik",
@@ -136,7 +138,7 @@
   },
   {
    "bold": 1,
-   "columns": 2,
+   "columns": 3,
    "fieldname": "apply_to",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -169,11 +171,13 @@
    "read_only_depends_on": "eval:doc.type == \"Clearing\" || doc.calculation_method != \"Manual\""
   },
   {
+   "bold": 1,
    "fieldname": "bank_account",
    "fieldtype": "Link",
    "label": "Bank Account",
+   "link_filters": "[[\"Bank Account\",\"disabled\",\"=\",0],[\"Bank Account\",\"is_company_account\",\"=\",1],[\"Bank Account\",\"company\",\"=\",\"eval:parent.company\"]]",
    "options": "Bank Account",
-   "read_only_depends_on": "eval:doc.type == \"Clearing\" "
+   "read_only": 1
   },
   {
    "columns": 1,
@@ -207,7 +211,7 @@
    "label": "Add or Deduct",
    "mandatory_depends_on": "eval:[\"Percentage\", \"Fixed Amount\"].includes(doc.calculation_method)",
    "options": "\nAdd\nDeduct",
-   "read_only_depends_on": "eval:![\"Percentage\", \"Fixed Amount\"].includes(doc.calculation_method)"
+   "read_only_depends_on": "eval:doc.type == \"Component\" || ![\"Percentage\", \"Fixed Amount\"].includes(doc.calculation_method)    "
   },
   {
    "fieldname": "account_section",
@@ -217,12 +221,23 @@
   {
    "fieldname": "column_break_ibso",
    "fieldtype": "Column Break"
+  },
+  {
+   "default": "On Gross Amount",
+   "depends_on": "eval:doc.calculation_method == \"Percentage\"",
+   "fieldname": "based_on",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Based On",
+   "mandatory_depends_on": "eval:doc.calculation_method == \"Percentage\"",
+   "options": "\nOn Gross Amount\nOn Previous Row Total",
+   "read_only_depends_on": "eval:doc.type == \"Component\" || doc.calculation_method != \"Percentage\""
   }
  ],
  "grid_page_length": 50,
  "istable": 1,
  "links": [],
- "modified": "2026-10-15 14:08:03.748376",
+ "modified": "2026-11-06 21:47:53.783255",
  "modified_by": "Administrator",
  "module": "Payment Settlement",
  "name": "Payment Settlement Entry Component",

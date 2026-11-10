@@ -11,10 +11,11 @@ class PaymentSettlementEntryComponent(Document):
 		from frappe.types import DF
 
 		account: DF.Link
-		account_currency: DF.Link | None
+		account_currency: DF.Link
 		add_deduct_tax: DF.Literal["", "Add", "Deduct"]
 		apply_to: DF.Link | None
 		bank_account: DF.Link | None
+		based_on: DF.Literal["", "On Gross Amount", "On Previous Row Total"]
 		calculation_method: DF.Literal["", "Automatic", "Manual", "Percentage", "Fixed Amount"]
 		credit: DF.Currency
 		credit_in_account_currency: DF.Currency

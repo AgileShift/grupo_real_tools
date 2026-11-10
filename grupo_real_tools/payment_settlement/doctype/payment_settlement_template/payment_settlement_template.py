@@ -16,6 +16,7 @@ class PaymentSettlementTemplate(Document):
 		accounts: DF.Table[PaymentSettlementTemplateAccount]
 		company: DF.Link
 		components: DF.Table[PaymentSettlementTemplateComponent]
+		voucher_type: DF.Literal["", "Journal Entry", "Bank Entry", "Cash Entry", "Credit Card Entry", "Contra Entry"]
 	# end: auto-generated types
 
 	def before_validate(self):

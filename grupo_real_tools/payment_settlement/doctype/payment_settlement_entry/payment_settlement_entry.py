@@ -20,6 +20,7 @@ class PaymentSettlementEntry(Document):
 
 		accounts: DF.Table[PaymentSettlementEntryAccount]
 		amended_from: DF.Link | None
+		cheque_no: DF.Data | None
 		company: DF.Link
 		components: DF.Table[PaymentSettlementEntryComponent]
 		from_date: DF.Datetime
@@ -31,6 +32,7 @@ class PaymentSettlementEntry(Document):
 		to_date: DF.Datetime
 		total_credit: DF.Currency
 		total_debit: DF.Currency
+		voucher_type: DF.Literal["", "Journal Entry", "Bank Entry", "Cash Entry", "Credit Card Entry", "Contra Entry"]
 	# end: auto-generated types
 
 	def validate(self):
@@ -48,10 +50,14 @@ class PaymentSettlementEntry(Document):
 			'Journal Entry',
 			company=self.company,
 			posting_date=self.posting_date,
-			voucher_type='Journal Entry',
+			voucher_type=self.voucher_type or 'Journal Entry',
 			multi_currency=True, custom_remark=True,
 			remark=_('Payment Settlement Entry') + f': {self.name}',
 		)
+
+		if journal.voucher_type == 'Bank Entry':
+			journal.cheque_no = self.cheque_no
+			journal.cheque_date = self.posting_date
 
 		for component in self.components:
 			if not (component.debit_in_account_currency or component.credit_in_account_currency):
@@ -139,11 +145,13 @@ class PaymentSettlementEntry(Document):
 	def fetch_template_data(self):
 		""" Copy Template Values as Skeleton """
 		if not self.template:
+			self.voucher_type = None
 			self.set('accounts', [])
 			self.set('components', [])
 			return
 
 		template = frappe.get_cached_doc('Payment Settlement Template', self.template)
+		self.voucher_type = template.voucher_type or 'Journal Entry'
 
 		self.set('accounts', [{
 			'mode_of_payment': account.mode_of_payment,
@@ -173,6 +181,7 @@ class PaymentSettlementEntry(Document):
 			'account': component.account,
 			'account_currency': component.account_currency,
 			'calculation_method': component.calculation_method,
+			'based_on': component.based_on,
 			'add_deduct_tax': component.add_deduct_tax,
 			'rate': component.rate,
 			'apply_to': component.apply_to,
@@ -267,29 +276,58 @@ class PaymentSettlementEntry(Document):
 
 	def _calculate_percentage_components(self):
 		clearing_accounts = {account.clearing_account: account for account in self.accounts}
+		previous_charges = {}
 
 		for component in self.components:
-			if component.type not in ('Component', 'Manual') or component.calculation_method != 'Percentage':
+			if component.type not in ('Component', 'Manual'):
+				continue
+			if component.calculation_method != 'Percentage':
+				# Only configured charges participate in the cascade, not manual funding rows.
+				if component.type == 'Component':
+					source = component.apply_to or None
+					if not source and len(clearing_accounts) == 1:
+						source = next(iter(clearing_accounts))
+					previous_charges.setdefault(source, []).append(component)
 				continue
 
 			account = clearing_accounts.get(component.apply_to)
 			if not account:
 				frappe.throw(_('Row {0}: Apply To does not belong to this settlement.').format(component.idx))
 
-			if component.account_currency != account.clearing_account_currency:
-				frappe.throw(
-					_('Account {0} is invalid. Account Currency must be {1}').format(
-						component.account, account.clearing_account_currency
+			component.based_on = component.based_on or 'On Gross Amount'
+			if component.based_on not in ('On Gross Amount', 'On Previous Row Total'):
+				frappe.throw(_('Invalid Option'), title=_('Based On'))
+
+			charges = []
+			if component.based_on == 'On Previous Row Total':
+				if any(
+					row.debit_in_account_currency or row.credit_in_account_currency
+					for row in previous_charges.get(None, [])
+				):
+					frappe.throw(_('Please select {0} first').format(_('Apply To')))
+				charges = previous_charges.get(component.apply_to, [])
+			charges = [row for row in charges if row.debit_in_account_currency or row.credit_in_account_currency]
+			for row in [component, *charges]:
+				if row.account_currency != account.clearing_account_currency:
+					frappe.throw(
+						_('Account {0} is invalid. Account Currency must be {1}').format(
+							row.account, account.clearing_account_currency
+						)
 					)
-				)
 
 			if component.add_deduct_tax not in ('Add', 'Deduct'):
 				frappe.throw(_('Invalid Option'), title=_('Add or Deduct'))
 
-			# Use gross collections in account currency; base rounding happens with the other components.
-			amount = account.clearing_amount * (component.rate or 0) / 100
+			# Subtract rounded earlier charges for this source; structural and funding rows are excluded.
+			base = account.clearing_amount - sum(
+				flt(row.debit_in_account_currency, row.precision('debit_in_account_currency'))
+				- flt(row.credit_in_account_currency, row.precision('credit_in_account_currency'))
+				for row in charges
+			)
+			amount = flt(base * (component.rate or 0) / 100, component.precision('debit_in_account_currency'))
 			component.debit_in_account_currency = amount if component.add_deduct_tax == 'Deduct' else 0
 			component.credit_in_account_currency = amount if component.add_deduct_tax == 'Add' else 0
+			previous_charges.setdefault(component.apply_to, []).append(component)
 
 	def _set_component_exchange_rates(self):
 		if not self.posting_date:

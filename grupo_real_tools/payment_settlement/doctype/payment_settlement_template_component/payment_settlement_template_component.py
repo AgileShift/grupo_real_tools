@@ -14,6 +14,7 @@ class PaymentSettlementTemplateComponent(Document):
 		account_currency: DF.Link
 		add_deduct_tax: DF.Literal["", "Add", "Deduct"]
 		apply_to: DF.Link | None
+		based_on: DF.Literal["", "On Gross Amount", "On Previous Row Total"]
 		calculation_method: DF.Literal["", "Percentage", "Fixed Amount", "Manual"]
 		parent: DF.Data
 		parentfield: DF.Data
