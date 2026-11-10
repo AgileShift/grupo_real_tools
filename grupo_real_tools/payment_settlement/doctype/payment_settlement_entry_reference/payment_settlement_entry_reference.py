@@ -10,11 +10,12 @@ class PaymentSettlementEntryReference(Document):
 	if TYPE_CHECKING:
 		from frappe.types import DF
 
+		account: DF.Link
 		amount: DF.Currency
 		base_amount: DF.Currency
 		currency: DF.Link
 		exchange_rate: DF.Float
-		mode_of_payment: DF.Link | None
+		mode_of_payment: DF.Link
 		parent: DF.Data
 		parentfield: DF.Data
 		parenttype: DF.Data

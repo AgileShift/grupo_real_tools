@@ -106,7 +106,7 @@
    "fieldname": "clearing_amount",
    "fieldtype": "Currency",
    "in_list_view": 1,
-   "label": "Clearing Amount",
+   "label": "Clearing Amount in Account Currency",
    "non_negative": 1,
    "options": "clearing_account_currency",
    "read_only": 1
@@ -131,7 +131,7 @@
  "grid_page_length": 50,
  "istable": 1,
  "links": [],
- "modified": "2026-10-14 16:50:24.750920",
+ "modified": "2026-10-20 18:10:57.844307",
  "modified_by": "Administrator",
  "module": "Payment Settlement",
  "name": "Payment Settlement Entry Account",
@@ -139,6 +139,7 @@
  "permissions": [],
  "row_format": "Dynamic",
  "rows_threshold_for_grid_search": 20,
+ "sort_field": "creation",
  "sort_order": "DESC",
  "states": []
 }
