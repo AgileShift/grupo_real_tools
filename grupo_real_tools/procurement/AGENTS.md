@@ -1,8 +1,8 @@
 # Module Instructions — Procurement
 
 These instructions apply to `grupo_real_tools/procurement/`.
-Read the parent [AGENTS.md](../../AGENTS.md) before working in this module. Follow the root and any intermediate guides.
-These instructions add module-specific requirements without weakening them.
+Read the parent [AGENTS.md](../../AGENTS.md) before working in this module.
+Follow the root and any intermediate guides. These instructions add module-specific requirements without weakening them.
 If they conflict with parent instructions, ask the owner before proceeding.
 
 ## Required reading

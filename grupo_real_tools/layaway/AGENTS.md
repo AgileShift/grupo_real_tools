@@ -27,13 +27,13 @@ The custom document model is `Layaway Plan`, `Layaway`, and `Layaway Item`. Do n
 ### Design invariants
 
 - A company may offer multiple enabled `Layaway Plan` records.
-- Each Layaway must retain its Plan link and freeze the rules, terms, currency, conversion rate, prices, discounts, and
-  totals that governed the agreement.
+- Each Layaway must retain its Plan link and freeze the rules, terms, currency, conversion rate,
+  prices, discounts, and totals that governed the agreement.
 - Plan amount limits and customer active exposure use company-currency base values.
 - Deposits and partial payments remain native `Payment Entry` documents allocated through the approved Sales Order path.
 - Inventory reservations remain native `Stock Reservation Entry` documents against Sales Order items.
-- Pricing Rules are applied or ignored according to the Plan before price lock; later rule changes must not reprice an
-  active Layaway.
+- Pricing Rules are applied or ignored according to the Plan before price lock;
+  later rule changes must not reprice an active Layaway.
 - Terms and Conditions remain a native link and rendered snapshot. Payment Terms Template is optional.
 - Warehouse selection remains in the item and Sales Order stock context; it is not a Plan default.
 - Forfeiture is terminal and requires explicit human action for destructive stock, sales, and accounting operations.
@@ -47,8 +47,8 @@ Work only within the authorized phase. Completing one phase does not authorize t
 
 - Create and arrange `Layaway Plan`, `Layaway`, and `Layaway Item` through the DocType UI.
 - Represent the approved form intent without implementing transactional automation or business-rule enforcement.
-- Follow the root rules for Frappe UI and generated metadata. Inspect regenerated files but correct discrepancies only
-  through Desk.
+- Follow the root rules for Frappe UI and generated metadata.
+  Inspect regenerated files but correct discrepancies only through Desk.
 
 #### Phase 2 — Native ERPNext links
 

@@ -4,8 +4,8 @@ Custom ERPNext extensions used across Grupo Real companies, including FT, CL, an
 
 ## Scope
 
-This app contains business addons shared across Grupo Real companies.
-Its modules have different implementation stages; their guides distinguish working behavior from intended design and future phases.
+This app contains business addons shared across Grupo Real companies. Its modules have different implementation stages;
+their guides distinguish working behavior from intended design and future phases.
 
 ## Features
 
@@ -23,8 +23,8 @@ Its modules have different implementation stages; their guides distinguish worki
 Declared in [pyproject.toml](pyproject.toml):
 
 - Python 3.14 or later.
-- Frappe 16 (`>=16.50.0,<17.0.0`).
-- ERPNext 16 (`>=16.50.0,<17.0.0`).
+- Frappe 16 (`>=16.55.0,<17.0.0`).
+- ERPNext 16 (`>=16.54.0,<17.0.0`).
 
 ## Technical documentation
 

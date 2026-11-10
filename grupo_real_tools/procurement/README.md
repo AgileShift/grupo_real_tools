@@ -13,12 +13,11 @@ It does not replace ERPNext purchasing, inventory, or accounting documents.
 
 ## Implemented behavior
 
-At the time the module guide was introduced, `Procurement.before_validate` only calculated proposal quantities and totals.
-The Procurement JavaScript file had no operational behavior, and the integration tests were empty scaffolds.
+`Procurement.before_validate` calculates proposal subtotals, total quantity, and document totals.
+The form script has no operational behavior, and the integration test file is a scaffold without test cases.
 
-The presence of fields or buttons does not establish that this module creates `Item`, `Purchase Invoice`,
-`Landed Cost Voucher`, or other documents.
-Revalidate these observations against current code before relying on them in a technical task.
+`Configure Item` is present in the form metadata but has no implemented action.
+The module does not automate creation of `Item`, `Purchase Invoice`, or `Landed Cost Voucher` documents.
 
 ## Technical documentation
 

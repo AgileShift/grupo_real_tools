@@ -1,8 +1,8 @@
 # Module Instructions — Payment Settlement
 
 These instructions apply to `grupo_real_tools/payment_settlement/`.
-Read the parent [AGENTS.md](../../AGENTS.md) before working in this module. Follow the root and any intermediate guides.
-These instructions add module-specific requirements without weakening them.
+Read the parent [AGENTS.md](../../AGENTS.md) before working in this module.
+Follow the root and any intermediate guides. These instructions add module-specific requirements without weakening them.
 If they conflict with parent instructions, ask the owner before proceeding.
 
 ## Required reading
@@ -23,7 +23,7 @@ The selected account is the primary source of accounting meaning.
 ### Invariants that must be preserved
 
 1. A Template is a recipe; an Entry is a transactional snapshot.
-2. A Template may include several `Mode of Payment` values, but the same value must not appear in more than one row.
+2. Keep one Template row per `Mode of Payment`. Do not treat the Desk filter as a backend uniqueness check.
 3. `Clearing Account` is derived from the `Mode of Payment` and company.
 4. Each structural row maps one clearing account to one settlement account.
 5. `Bank Account` is optional. A Template bank propagates to its corresponding Settlement row.
@@ -50,8 +50,11 @@ Do not change signs without tracing a complete accounting case through the
 
 ### Currencies
 
-- A clearing row uses the real aggregate rate of its references: `base_amount / amount`.
-- A row in company currency uses a rate of 1.
+- Normalize new references to their clearing-account currency as described in the [clearing calculation](README.md#1-clearing).
+- Clearing calculations consume normalized account-currency references; do not reintroduce source-currency conversion there.
+- Do not reinterpret historical snapshots. Refresh older Draft references through Get Entries before recalculation or save.
+- A foreign-currency clearing row uses its aggregate base/account-currency credit ratio, or 0 when empty.
+- Every row in company currency uses a rate of 1, including empty clearing rows.
 - Other rows obtain the rate for the accounting date if one has not already been provided.
 - When a component and destination share a currency, apply the amount directly in that currency.
 - When their currencies differ, convert through base amounts and the destination rate.
@@ -73,8 +76,9 @@ Allow accounts without a matching Bank Account, including POS clearing accounts.
 
 ### Responsibility boundaries
 
-- Calculations, reference orchestration, submit, and cancellation: `payment_settlement_entry.py`.
-- Source queries: `doctype/payment_settlement_entry/references.py`.
+- Calculations, reference snapshot assignment, submit, and cancellation: `payment_settlement_entry.py`.
+- Reference retrieval and exclusion of already-settled candidates: `doctype/payment_settlement_entry/references.py`.
+  Keep the submit-time duplicate validation in the Entry controller.
 - Server-side Template configuration: `payment_settlement_template.py`.
 - Filters, buttons, and form calls: corresponding `.js` files, only after explicit approval.
 
@@ -86,10 +90,12 @@ Do not present unfinished calculations, unsupported reference sources, or bank r
 
 ### Recommended priorities
 
-1. Run and extend Frappe-native integration tests for Manual settlement use cases on a dedicated test site.
-   Preserve the fast calculation tests; use controlled records and rollback for real submit/cancel coverage.
+1. Run and extend the standard DocType integration tests on the agreed development site.
+   Keep coverage in `test_payment_settlement_entry.py`, using native validation, real journals and ledger entries,
+   controlled records, and rollback. Do not reintroduce a parallel simulated accounting test harness.
 2. Operationally test POS, cash-register, and courier settlements with controlled records.
-3. Extend gross-percentage calculations and implement `Fixed Amount` in separate approved increments.
+3. Verify gross and running-balance Percentage calculations before extending them.
+   Treat shared clearing allocation and `Fixed Amount` as separate work requiring approval.
 4. Add reference sources only for a demonstrated need.
 5. Consider bank reconciliation after `Journal Entry` generation is stable.
 

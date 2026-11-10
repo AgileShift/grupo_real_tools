@@ -1,7 +1,6 @@
 # Agent Instructions — Grupo Real Tools
 
 Maintenance reference: [Documentation normalization skill](../../frappe-app-standards/skills/frappe-app-docs-normalize/SKILL.md).
-
 Technical app name: `grupo_real_tools`.
 
 These instructions apply throughout this repository. Module guides add specific instructions.
@@ -13,10 +12,14 @@ If they conflict with the root rules, ask the owner before proceeding.
 ### Working agreement
 
 - Read the root README, root AGENTS, and applicable module guides before proposing or making changes.
-  Read CONTRIBUTING.md before preparing a commit or pull request.
+  Read CONTRIBUTING.md, when present, before preparing a commit or pull request.
 - Before working inside a module, locate and read its applicable local instructions.
   When creating or reorganizing documentation, consult the normalization skill linked by the root AGENTS.
   Keep template schemas in its references and do not repeat parent rules in module guides.
+- Use available `frappe-app-dev` references for Frappe implementation and `frappe-code-review` for code reviews.
+  External skills do not override repository/module rules or explicit owner decisions.
+  Apply only compatible guidance within the authorized scope. Report conflicts and retain the applicable local rule.
+  If a skill is unavailable, report it and continue with local instructions. Do not install it implicitly.
 - Before editing, explain the objective, exact affected files, proposed behavior, material risks, and verification plan.
   Obtain explicit authorization for that scope.
   Honor authorization already given; do not request it again for the same work.
@@ -24,8 +27,10 @@ If they conflict with the root rules, ask the owner before proceeding.
   Completing a phase does not authorize the next one.
 - Treat documentation normalization as an explicit task with one declared scope: entire app, root only,
   named module(s) only, or root plus named module(s).
-  Entire app includes the root files and every existing meaningful module README.md and AGENTS.md.
+  Entire app includes only root and existing meaningful module README.md and AGENTS.md files.
   Do not infer module inclusion from a root-only request.
+  Include other technical docs explicitly in normalization scope before editing them.
+  Reading linked references does not authorize editing them.
 - Do not expand a focused task into a broader refactor, migration, or automation.
 - Preserve unrelated worktree changes. Never discard, overwrite, or include them.
 - Evaluate the business need before adding modules, screens, or forms.
@@ -37,9 +42,10 @@ If they conflict with the root rules, ask the owner before proceeding.
   Update README, technical references, and local instructions where their documented behavior or constraints changed;
   leave unrelated documentation intact.
 - Keep detailed technical descriptions in the relevant README or linked technical reference.
-  Use AGENTS for working instructions, brief context, and concise invariants;
-  link to the canonical explanation instead of maintaining a second description of behavior, architecture, limitations,
-  or verification status.
+  Use AGENTS for working instructions, brief context, and concise invariants; link to the canonical explanation
+  instead of maintaining a second description of behavior, architecture, limitations, or verification status.
+  Keep module models, invariants, phases, and detailed verification in their existing local guides.
+  Do not centralize or replace them with a generic description of the app.
 - Keep small pending work near its context in Issues, README sections, or code TODOs.
   When it becomes distributed, repetitive, or difficult to review, consider a backlog:
   keep app-wide work in `docs/backlog.md` and module-specific work in `docs/{module}-backlog.md`,
@@ -84,6 +90,9 @@ If they conflict with the root rules, ask the owner before proceeding.
   Keep complete Markdown links and URLs intact; allow longer lines for links, tokens, tables, or code examples.
   Preserve intentional Markdown line breaks and structure.
 - Use English for code and documentation.
+- Use the repository's configuration files for dependency requirements, code formatting, and lint settings.
+  Follow `.editorconfig` and `pyproject.toml` where present; reference them instead of repeating their values in AGENTS.
+  Apply the shared Markdown convention to documentation. Report conflicting settings before changing configuration.
 
 ### Localization and generated catalogs
 
@@ -164,13 +173,17 @@ If they conflict with the root rules, ask the owner before proceeding.
 
 ### Verification and completion
 
-- Inspect the complete scoped diff and confirm unrelated work was preserved.
+- Before declaring a task complete, verify the authorized scope, full scoped diff, and preservation of unrelated work.
+  The coordinating agent is responsible for this final verification.
 - Run `git diff --check`. Check syntax for changed Python and JavaScript source.
 - Run focused checks and meaningful tests appropriate to the changed behavior, plus the requirements of applicable module guides.
+- Prefer Frappe-native test tools and existing test files for relevant business cases.
+  Test framework-dependent behavior through real document APIs and lifecycles instead of recreating it in test doubles.
+  Keep isolated unit tests for pure logic and mock external services when needed.
 - For UI changes, verify the actual interaction and Frappe-regenerated files.
 - For transactional behavior, verify relevant retries, cancellation, and rollback using controlled data.
   Do not treat empty test scaffolds as coverage.
-- Report what changed, why, what was tested, and unresolved limitations or decisions.
+- Report what changed, why, what was tested, what was intentionally left out, and pending limitations or decisions.
   Do not claim untested behavior is verified.
 - Deployment and production data changes require their own applicable authorization;
   a successful local check or documentation update does not grant it.
@@ -191,24 +204,13 @@ Preserve the distinction between implemented functionality, module intent, and f
 
 ### Architecture and dependencies
 
-- Dependency and tool configuration lives in [pyproject.toml](pyproject.toml).
-  It declares Python 3.14 or later and Frappe/ERPNext 16. Verify the installed source before relying on core behavior.
-- Keep module models, invariants, phases, and detailed verification in their existing local guides.
-  Do not centralize or replace them with a generic description of the app.
-- Spanish catalog: [grupo_real_tools/locale/es.po](grupo_real_tools/locale/es.po). Apply the shared localization rules.
-- The shared 120-character convention applies to Markdown documentation.
-  Preserve the Python formatter configuration in pyproject.toml;
-  documentation normalization does not change code formatting settings.
+- Dependency and tool configuration: [pyproject.toml](pyproject.toml) and [.editorconfig](.editorconfig).
+- Spanish catalog: [grupo_real_tools/locale/es.po](grupo_real_tools/locale/es.po).
 
 ### Repository-wide constraints
 
 - If a module lacks a local guide, apply the root instructions and propose a guide before broad or sensitive work.
   This does not authorize inventing module rules.
-- When the owner's conclusion is wrong, say so clearly and explain why without becoming dismissive or adversarial.
-  Prefer a supported correction over reassurance and a precise unknown over a fabricated answer.
-- Before declaring a task complete, the coordinating agent must verify scope, authorization, and the full scoped diff.
-  Run the affected module's required checks and report what was implemented, what was deliberately not implemented,
-  and what still needs a decision.
 
 ### Module guides
 

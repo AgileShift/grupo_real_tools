@@ -28,8 +28,8 @@ build-backend = "flit_core.buildapi"
 packages = []
 
 [tool.bench.frappe-dependencies]
-frappe = ">=16.50.0,<17.0.0"
-erpnext = ">=16.50.0,<17.0.0"
+frappe = ">=16.55.0,<17.0.0"
+erpnext = ">=16.54.0,<17.0.0"
 
 [tool.ruff]
 line-length = 110

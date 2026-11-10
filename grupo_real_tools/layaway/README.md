@@ -126,8 +126,8 @@ fieldnames and form layout must be created through Desk during the authorized st
 - Enabled
 
 Global rules such as 30 days, a 30% deposit, five active units, or a 300-unit monetary limit become values on a specific
-Plan rather than hardcoded module behavior. Example Plans include `Standard 30 Days`, `Express 15 Days`, and
-`Preorder 45 Days`.
+Plan rather than hardcoded module behavior.
+Example Plans include `Standard 30 Days`, `Express 15 Days`, and `Preorder 45 Days`.
 
 #### Per-Layaway eligibility ranges
 
@@ -165,13 +165,13 @@ The minimum deposit is calculated only after the final commercial total is known
 - Payment Terms Template, optional
 - Forfeited Deposit Income Account
 
-The Plan intentionally has no Default Warehouse. Each Sales Order item must use its actual warehouse from the normal
-ERPNext selling and stock context.
+The Plan intentionally has no Default Warehouse.
+Each Sales Order item must use its actual warehouse from the normal ERPNext selling and stock context.
 
 ### Layaway snapshot
 
-Each Layaway must retain both the selected Plan link and the values that governed the agreement. Editing a Plan must not
-reinterpret existing Layaways.
+Each Layaway must retain both the selected Plan link and the values that governed the agreement.
+Editing a Plan must not reinterpret existing Layaways.
 
 The intended snapshot includes:
 
@@ -202,8 +202,8 @@ after Sales Order submission and minimum-deposit receipt—remains an open workf
 
 ### Multi-currency and limits
 
-A Layaway may use USD, NIO, or another valid ERPNext transaction currency. It must retain the normal ERPNext transaction
-and company-currency values:
+A Layaway may use USD, NIO, or another valid ERPNext transaction currency.
+It must retain the normal ERPNext transaction and company-currency values:
 
 ```text
 grand_total
@@ -216,9 +216,9 @@ conversion_rate
 Plan amount ranges and customer active-amount limits are evaluated in company currency using base values. This allows
 Layaways in different transaction currencies to consume one comparable company-specific limit.
 
-Quantity limits refer to the sum of reserved `stock_qty`, not the number of item rows or distinct SKUs. Cross-UOM
-comparability remains a pending decision for Plans that may include stock UOMs other than a common discrete unit such
-as `Nos`.
+Quantity limits refer to the sum of reserved `stock_qty`, not the number of item rows or distinct SKUs.
+Cross-UOM comparability remains a pending decision for Plans that may include stock UOMs
+other than a common discrete unit such as `Nos`.
 
 ### Payments and payment terms
 
@@ -235,8 +235,7 @@ must be recorded as a separate customer advance for another purpose.
 
 ### Lifecycle model
 
-Lifecycle, payment, and fulfillment represent different dimensions and must not be collapsed into one ambiguous status
-field.
+Lifecycle, payment, and fulfillment represent different dimensions and must not be collapsed into one ambiguous status field.
 
 ```text
 Lifecycle Status:
@@ -357,7 +356,6 @@ The following decisions remain open and do not authorize implementation:
 - define whether a linked Payment Terms Template is enforceable or informational for Layaway;
 - define cross-UOM behavior for quantity limits;
 - approve the completion sequence between Delivery Note and Sales Invoice;
-- obtain accounting approval for the forfeiture document, accounts, cancellation sequence, and treatment of received
-  advances;
+- obtain accounting approval for the forfeiture document, accounts, cancellation sequence, and treatment of received advances;
 - decide whether the non-destructive transition to `Expired` is automatic or manual;
 - define Plan availability controls such as default selection and effective dates if operationally required.
