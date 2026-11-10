@@ -330,9 +330,12 @@ The user must select the real meaning of the difference; not every difference is
 ### Generated Journal Entry
 
 The Entry copies `Journal Entry Type` (`voucher_type`) from its Template and passes that snapshot to the Journal Entry.
-Entries without a stored type use `Journal Entry`. For `Bank Entry`, enter the deposit's `Reference Number` (`cheque_no`)
-in the Entry. The generated journal uses the Settlement's `Posting Date` as its `Reference Date` (`cheque_date`),
-without a separate date input. ERPNext validates the bank reference when the journal is submitted.
+Entries without a stored type use `Journal Entry`. The `Posting Details` section groups the posting date, reference
+number, journal type, and generated journal link.
+
+`Reference Number` (`cheque_no`) is required for `Bank Entry` and optional for other types. When present, the number is
+copied to the journal along with the Settlement's `Posting Date` as the `Reference Date` (`cheque_date`). If no number
+is entered, neither field is copied. ERPNext validates the bank reference when the journal is submitted.
 
 Only components with a non-zero debit or credit are copied.
 

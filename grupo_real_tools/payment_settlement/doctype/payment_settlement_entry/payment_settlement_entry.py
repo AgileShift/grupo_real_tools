@@ -55,7 +55,7 @@ class PaymentSettlementEntry(Document):
 			remark=_('Payment Settlement Entry') + f': {self.name}',
 		)
 
-		if journal.voucher_type == 'Bank Entry':
+		if self.cheque_no:
 			journal.cheque_no = self.cheque_no
 			journal.cheque_date = self.posting_date
 
