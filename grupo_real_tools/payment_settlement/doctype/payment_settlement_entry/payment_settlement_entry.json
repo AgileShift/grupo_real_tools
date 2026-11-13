@@ -90,24 +90,24 @@
   {
    "fieldname": "section_break_ltoe",
    "fieldtype": "Section Break",
-   "hide_border": 1,
-   "label": "Settlement Components"
+   "hide_border": 1
   },
   {
    "allow_bulk_edit": 1,
    "fieldname": "components",
    "fieldtype": "Table",
+   "label": "Settlement Components",
    "options": "Payment Settlement Entry Component",
    "reqd": 1
   },
   {
    "fieldname": "section_break_juym",
-   "fieldtype": "Section Break",
-   "label": "Clearing References"
+   "fieldtype": "Section Break"
   },
   {
    "fieldname": "references",
    "fieldtype": "Table",
+   "label": "Clearing References",
    "options": "Payment Settlement Entry Reference",
    "reqd": 1
   },
@@ -128,11 +128,12 @@
   {
    "fieldname": "section_break_fbkr",
    "fieldtype": "Section Break",
-   "label": "Clearing & Settlement Accounts"
+   "hide_border": 1
   },
   {
    "fieldname": "accounts",
    "fieldtype": "Table",
+   "label": "Clearing & Settlement Accounts",
    "options": "Payment Settlement Entry Account",
    "read_only": 1,
    "reqd": 1
@@ -219,7 +220,7 @@
  "force_re_route_to_default_view": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-11-09 22:08:18.425746",
+ "modified": "2026-11-13 09:57:28.595150",
  "modified_by": "Administrator",
  "module": "Payment Settlement",
  "name": "Payment Settlement Entry",
