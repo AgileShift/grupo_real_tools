@@ -13,10 +13,12 @@ their guides distinguish working behavior from intended design and future phases
   Its controller implements Journal Entry submission and cancellation.
   See the module documentation for the supported flow and limitations.
 - **Procurement:** provides the foundation for guided purchasing and item configuration.
-  The current Procurement controller calculates proposal quantities and totals;
-  this does not establish an automated purchasing workflow.
-- **Layaway:** documents a phased design for merchandise reservations built around standard ERPNext documents.
-  Its future phases are not asserted as implemented.
+  Before validation, the controller sums proposal quantities and calculates subtotals from quantities and purchase rates.
+- **Layaway:** includes a DocType scaffold for a phased merchandise reservation design built around standard ERPNext
+  documents. The transactional workflow remains planned.
+- **Ecommerce:** provides product listings, template details, categories, and attributes through a local development API.
+  Product listings and details use the default company's `default_warehouse`. Catalog pricing uses ERPNext.
+  The GET routes require direct loopback access to `localhost:8000` with developer mode enabled.
 
 ## Requirements
 
@@ -32,7 +34,10 @@ Declared in [pyproject.toml](pyproject.toml):
   [module instructions](grupo_real_tools/payment_settlement/AGENTS.md).
 - **Procurement:** [module README](grupo_real_tools/procurement/README.md) and
   [module instructions](grupo_real_tools/procurement/AGENTS.md).
-- **Layaway:** [module README](grupo_real_tools/layaway/README.md) and [module instructions](grupo_real_tools/layaway/AGENTS.md).
+- **Layaway:** [module README](grupo_real_tools/layaway/README.md) and
+  [module instructions](grupo_real_tools/layaway/AGENTS.md).
+- **Ecommerce:** [catalog package](grupo_real_tools/ecommerce/catalog.py) and
+  [local API](grupo_real_tools/ecommerce/catalog_api.py).
 
 ## Backlog
 
