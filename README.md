@@ -39,8 +39,8 @@ Declared in [pyproject.toml](pyproject.toml):
   [module instructions](grupo_real_tools/procurement/AGENTS.md).
 - **Layaway:** [module README](grupo_real_tools/layaway/README.md) and
   [module instructions](grupo_real_tools/layaway/AGENTS.md).
-- **Ecommerce:** [catalog package](grupo_real_tools/ecommerce/catalog.py) and
-  [local API](grupo_real_tools/ecommerce/catalog_api.py).
+- **Ecommerce:** [module guide](grupo_real_tools/ecommerce/README.md),
+  [module instructions](grupo_real_tools/ecommerce/AGENTS.md) and [resource API](grupo_real_tools/ecommerce/api/).
 
 ## Backlog
 
