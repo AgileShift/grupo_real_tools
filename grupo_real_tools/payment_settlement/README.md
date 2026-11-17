@@ -332,6 +332,9 @@ The user must select the real meaning of the difference; not every difference is
 The Entry copies `Journal Entry Type` (`voucher_type`) from its Template and passes that snapshot to the Journal Entry.
 Entries without a stored type use `Journal Entry`. The `Posting Details` section groups the posting date, reference
 number, journal type, and generated journal link.
+The Journal Entry title combines the Template and Settlement identifiers. If the optional `Remark` is provided,
+it becomes the Journal Entry's custom remark; otherwise ERPNext generates its standard remark.
+Component `User Remark` values remain separate and are copied to their corresponding Journal Entry rows.
 
 `Reference Number` (`cheque_no`) is required for `Bank Entry` and optional for other types. When present, the number is
 copied to the journal along with the Settlement's `Posting Date` as the `Reference Date` (`cheque_date`). If no number

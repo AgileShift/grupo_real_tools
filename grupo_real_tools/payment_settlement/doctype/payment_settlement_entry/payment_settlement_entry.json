@@ -17,6 +17,8 @@
   "posting_date",
   "cheque_no",
   "column_break_cycv",
+  "remark",
+  "column_break_oipd",
   "voucher_type",
   "journal_entry",
   "section_break_fbkr",
@@ -175,6 +177,7 @@
    "label": "Make Difference Entry"
   },
   {
+   "bold": 1,
    "fieldname": "journal_entry",
    "fieldtype": "Link",
    "in_standard_filter": 1,
@@ -215,12 +218,22 @@
    "fieldname": "section_break_zrwq",
    "fieldtype": "Section Break",
    "label": "Posting Details"
+  },
+  {
+   "fieldname": "remark",
+   "fieldtype": "Small Text",
+   "label": "Remark",
+   "no_copy": 1
+  },
+  {
+   "fieldname": "column_break_oipd",
+   "fieldtype": "Column Break"
   }
  ],
  "force_re_route_to_default_view": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-11-13 09:57:28.595150",
+ "modified": "2026-11-16 20:13:49.761098",
  "modified_by": "Administrator",
  "module": "Payment Settlement",
  "name": "Payment Settlement Entry",

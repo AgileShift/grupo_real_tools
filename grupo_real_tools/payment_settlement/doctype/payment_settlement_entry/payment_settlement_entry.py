@@ -28,6 +28,7 @@ class PaymentSettlementEntry(Document):
 		naming_series: DF.Literal["PS-.YYYY.-.#####"]
 		posting_date: DF.Date
 		references: DF.Table[PaymentSettlementEntryReference]
+		remark: DF.SmallText | None
 		template: DF.Link
 		to_date: DF.Datetime
 		total_credit: DF.Currency
@@ -51,9 +52,13 @@ class PaymentSettlementEntry(Document):
 			company=self.company,
 			posting_date=self.posting_date,
 			voucher_type=self.voucher_type or 'Journal Entry',
-			multi_currency=True, custom_remark=True,
-			remark=_('Payment Settlement Entry') + f': {self.name}',
+			multi_currency=True,
+			title=f'{self.template} · {self.name}',
 		)
+
+		if self.remark:
+			journal.custom_remark = True
+			journal.remark = self.remark
 
 		if self.cheque_no:
 			journal.cheque_no = self.cheque_no
