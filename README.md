@@ -19,14 +19,17 @@ their guides distinguish working behavior from intended design and future phases
 - **Ecommerce:** provides product listings, template details, categories, and attributes through a local development API.
   Product listings and details use the default company's `default_warehouse`. Catalog pricing uses ERPNext.
   The GET routes require direct loopback access to `localhost:8000` with developer mode enabled.
+  Template detail includes `images` for the requested Item and each available variant. These lists include only
+  public Item attachments under `/files/` with JPG, JPEG, or PNG extensions, ordered by creation. They do not
+  publish private files or external URLs. Image paths are local-development data, not the future public media API.
 
 ## Requirements
 
 Declared in [pyproject.toml](pyproject.toml):
 
 - Python 3.14 or later.
-- Frappe 16 (`>=16.55.0,<17.0.0`).
-- ERPNext 16 (`>=16.54.0,<17.0.0`).
+- Frappe 16 (`>=16.60.0,<17.0.0`).
+- ERPNext 16 (`>=16.60.0,<17.0.0`).
 
 ## Technical documentation
 

@@ -17,9 +17,19 @@ add_to_apps_screen = [
 		"logo": "/assets/grupo_real_tools/logo.png",
 		"title": app_title,
 		"route": "/desk/payment-settlement",
+		# "has_permission": "grupo_real_tools.api.permission.has_app_permission",
 		"sequence_id": 99
 	}
 ]
+
+# The dock, the rail down the left of the desk, is a document rather than a hook. Author it in
+# Manage Dock on a developer-mode site and press Export to App, and it is written to
+# `grupo_real_tools/dock/grupo_real_tools/grupo_real_tools.json` for git to carry. An app that ships none has no
+# rail: its sidebar gets a switcher in the header instead.
+#
+# A companion app, one that extends a host app rather than standing on its own, says so with
+# `mount_on` on that same record, and its entries are appended to the host's rail. Mounting keeps
+# the companion off the apps screen, so it takes precedence over any add_to_apps_screen above.
 
 # Includes in <head>
 # ------------------
@@ -45,6 +55,7 @@ add_to_apps_screen = [
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
+# doctype_kanban_js = {"doctype" : "public/js/doctype_kanban.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
@@ -113,11 +124,28 @@ add_to_apps_screen = [
 # before_app_uninstall = "grupo_real_tools.utils.before_app_uninstall"
 # after_app_uninstall = "grupo_real_tools.utils.after_app_uninstall"
 
+# Build
+# ------------------
+# To hook into the build process
+
+# after_build = "grupo_real_tools_v16.build.after_build"
+
+# To hook into the build process of other apps
+# The list of apps being built is passed as an argument
+
+# after_app_build = "grupo_real_tools.build.after_app_build"
+
 # Desk Notifications
 # ------------------
 # See frappe.core.notifications.get_notification_config
 
 # notification_config = "grupo_real_tools.notifications.get_notification_config"
+
+# Awesome Bar
+# -----------
+# Extra search results: list of dicts with label, description, route, index.
+# route: ["List", "ToDo"], "/desk/docs/some/page", or "https://example.com"
+# awesomebar_search = ["grupo_real_tools_v16.search.awesomebar_results"]
 
 # Permissions
 # -----------
@@ -252,6 +280,8 @@ add_to_apps_screen = [
 # auth_hooks = [
 # 	"grupo_real_tools.auth.validate"
 # ]
+
+# on_social_login = "grupo_real_tools_v16.auth.on_social_login"
 
 # Automatically update python controller files with type annotations for this app.
 export_python_type_annotations = True
