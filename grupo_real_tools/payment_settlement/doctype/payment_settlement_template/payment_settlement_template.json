@@ -72,13 +72,14 @@
   }
  ],
  "force_re_route_to_default_view": 1,
+ "link_display_mode": "Search",
  "links": [
   {
    "link_doctype": "Payment Settlement Entry",
    "link_fieldname": "template"
   }
  ],
- "modified": "2026-11-10 18:43:35.859921",
+ "modified": "2026-11-17 13:47:31.027506",
  "modified_by": "Administrator",
  "module": "Payment Settlement",
  "name": "Payment Settlement Template",

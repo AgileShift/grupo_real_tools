@@ -23,6 +23,7 @@
   "journal_entry",
   "section_break_fbkr",
   "accounts",
+  "clearing_overview",
   "section_break_juym",
   "references",
   "section_break_ltoe",
@@ -95,7 +96,6 @@
    "hide_border": 1
   },
   {
-   "allow_bulk_edit": 1,
    "fieldname": "components",
    "fieldtype": "Table",
    "label": "Settlement Components",
@@ -223,17 +223,24 @@
    "fieldname": "remark",
    "fieldtype": "Small Text",
    "label": "Remark",
+   "max_height": "6rem",
    "no_copy": 1
   },
   {
    "fieldname": "column_break_oipd",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "clearing_overview",
+   "fieldtype": "HTML",
+   "label": "Clearing Overview"
   }
  ],
  "force_re_route_to_default_view": 1,
  "is_submittable": 1,
+ "link_display_mode": "Search",
  "links": [],
- "modified": "2026-11-16 20:13:49.761098",
+ "modified": "2026-11-17 17:38:31.616144",
  "modified_by": "Administrator",
  "module": "Payment Settlement",
  "name": "Payment Settlement Entry",
