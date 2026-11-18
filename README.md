@@ -16,9 +16,9 @@ their guides distinguish working behavior from intended design and future phases
   Before validation, the controller sums proposal quantities and calculates subtotals from quantities and purchase rates.
 - **Layaway:** includes a DocType scaffold for a phased merchandise reservation design built around standard ERPNext
   documents. The transactional workflow remains planned.
-- **Ecommerce:** provides product listings, template details, categories, and attributes through a local development API.
+- **Ecommerce:** provides product listings, template details, categories, and attributes through Frappe API v2.
   Product listings and details use the default company's `default_warehouse`. Catalog pricing uses ERPNext.
-  The GET routes require direct loopback access to `localhost:8000` with developer mode enabled.
+  The read-only GET methods are grouped by primary ERPNext resource under `grupo_real_tools.ecommerce.api`.
   Template detail includes `images` for the requested Item and each available variant. These lists include only
   public Item attachments under `/files/` with JPG, JPEG, or PNG extensions, ordered by creation. They do not
   publish private files or external URLs. Image paths are local-development data, not the future public media API.
