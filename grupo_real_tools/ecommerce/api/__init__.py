@@ -1,1 +1,0 @@
-"""Public Ecommerce API endpoints."""

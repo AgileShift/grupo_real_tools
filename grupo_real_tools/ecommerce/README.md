@@ -14,11 +14,10 @@ GET /api/v2/method/grupo_real_tools.ecommerce.api.item_group.get_item_groups
 GET /api/v2/method/grupo_real_tools.ecommerce.api.item_attribute.get_item_attributes
 ```
 
-Frappe API v2 returns method results under the `data` response property. The files under `api/` define the public
-surface by primary ERPNext resource. `catalog.py` retains the catalog composition and query implementation.
+Frappe API v2 returns method results under the `data` response property.
+The files under `api/` define the public surface by primary ERPNext resource.
 
-`catalog_api.py` and the whitelisted methods historically exposed by `catalog.py` remain temporary compatibility
-surfaces while deployed consumers migrate. Do not add new consumers to those paths.
+Only functions under `ecommerce/api` are whitelisted.
 
 ## Verification
 
