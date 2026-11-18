@@ -3,8 +3,11 @@ from urllib.parse import unquote, urlsplit
 
 import frappe
 from erpnext.utilities.product import get_price
-from frappe.utils import flt
+from frappe.utils import cint, flt
 from frappe.utils.caching import http_cache, redis_cache
+
+
+MAX_PAGE_LENGTH = 50
 
 
 def _comma_separated_to_list(value: str | None) -> list[str]:
@@ -137,6 +140,11 @@ def get_items(sale: bool = False, category: str = '', size: str = '', color: str
 	Returns:
 		List of items or a single item.
 	"""
+	start, limit = max(0, cint(start)), min(MAX_PAGE_LENGTH, max(1, cint(limit)))
+	categories = _comma_separated_to_list(category)
+	sizes = _comma_separated_to_list(size)
+	colors = _comma_separated_to_list(color)
+
 	warehouse = _get_catalog_warehouse()
 	if not warehouse:
 		return []
@@ -144,8 +152,8 @@ def get_items(sale: bool = False, category: str = '', size: str = '', color: str
 	query = _build_base_query()
 	params = {"start": start, "limit": limit, "warehouse": warehouse}
 
-	if size:
-		params["sizes"] = _comma_separated_to_list(size)
+	if sizes:
+		params["sizes"] = sizes
 		query += """
 			AND EXISTS (
 				SELECT 1
@@ -156,8 +164,8 @@ def get_items(sale: bool = False, category: str = '', size: str = '', color: str
 			)
 		"""
 
-	if color:
-		params["colors"] = _comma_separated_to_list(color)
+	if colors:
+		params["colors"] = colors
 		name_conditions = []
 		for index, color_name in enumerate(params["colors"]):
 			param_key = f"color_like_{index}"
@@ -198,15 +206,19 @@ def get_items(sale: bool = False, category: str = '', size: str = '', color: str
 		query += " AND item.item_code IN %(items_on_sale)s"
 		params["items_on_sale"] = items_on_sale
 
-	if category:  # Filter by categories and their descendants
-		if categories := _get_descendant_item_groups(_comma_separated_to_list(category)):
-			params["categories"] = categories
+	if categories:  # Filter by categories and their descendants
+		if descendant_categories := _get_descendant_item_groups(categories):
+			params["categories"] = descendant_categories
 			query += " AND item.item_group IN %(categories)s"
 		else:
 			return []  # Bad Item Group
 
 	# Add Pagination # TODO: Add Sort By in Settings
-	items = frappe.db.sql(query + " ORDER BY item.creation DESC LIMIT %(start)s, %(limit)s;", params, as_dict=True)
+	items = frappe.db.sql(
+		query + " ORDER BY item.creation DESC, item.name DESC LIMIT %(start)s, %(limit)s;",
+		params,
+		as_dict=True,
+	)
 
 	for item in items:
 		item.price = _get_item_price(item.item_code)
@@ -251,7 +263,7 @@ def get_items_from_template(item_code: str):
 			(item.item_code = %(item_code)s OR item.variant_of = %(item_code)s)
 			AND (bin.actual_qty - bin.reserved_stock) > 0
 			AND bin.warehouse = %(warehouse)s
-		ORDER BY item.creation ASC
+		ORDER BY item.creation ASC, item.name ASC
 	""", {"item_code": item_code, "warehouse": warehouse}, as_dict=True)
 
 	if not items:
