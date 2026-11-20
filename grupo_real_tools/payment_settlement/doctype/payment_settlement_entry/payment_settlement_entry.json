@@ -4,6 +4,7 @@
  "creation": "2026-02-26 12:57:05.899402",
  "default_view": "List",
  "doctype": "DocType",
+ "enable_upload_first_workflow": 1,
  "engine": "InnoDB",
  "field_order": [
   "company",
@@ -240,7 +241,7 @@
  "is_submittable": 1,
  "link_display_mode": "Search",
  "links": [],
- "modified": "2026-11-17 17:38:31.616144",
+ "modified": "2026-11-18 09:47:33.125145",
  "modified_by": "Administrator",
  "module": "Payment Settlement",
  "name": "Payment Settlement Entry",
