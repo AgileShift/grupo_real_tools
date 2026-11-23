@@ -3,6 +3,7 @@ from urllib.parse import unquote, urlsplit
 
 import frappe
 from erpnext.utilities.product import get_price
+from frappe import _
 from frappe.utils import cint, flt
 from frappe.utils.caching import http_cache, redis_cache
 
@@ -125,7 +126,15 @@ def _get_descendant_item_groups(item_groups: list[str]) -> list[str]:
 @frappe.whitelist(allow_guest=True, methods=["GET"])
 @http_cache(public=True, max_age=300, stale_while_revalidate=900)
 @redis_cache(ttl=90, user=None, shared=False)
-def get_items(sale: bool = False, category: str = '', size: str = '', color: str = '', start: int = 0, limit: int = 19):
+def get_items(
+	sale: bool = False,
+	category: str = '',
+	size: str = '',
+	color: str = '',
+	start: int = 0,
+	limit: int = 19,
+	sort: str = 'desc',
+):
 	"""
 	Get a list of available items, includes filtering by category and its descendants.
 
@@ -136,11 +145,16 @@ def get_items(sale: bool = False, category: str = '', size: str = '', color: str
 		color (str): Fetches items with a specific color.
 		start (int): Pagination start index.
 		limit (int): Number of items to fetch.
+		sort (str): Sort direction by creation date: asc or desc.
 
 	Returns:
 		List of items or a single item.
 	"""
 	start, limit = max(0, cint(start)), min(MAX_PAGE_LENGTH, max(1, cint(limit)))
+	sort = (sort or '').lower()
+	if sort not in {'asc', 'desc'}:
+		frappe.throw(_('Sort order must be ASC or DESC.'))
+
 	categories = _comma_separated_to_list(category)
 	sizes = _comma_separated_to_list(size)
 	colors = _comma_separated_to_list(color)
@@ -213,9 +227,9 @@ def get_items(sale: bool = False, category: str = '', size: str = '', color: str
 		else:
 			return []  # Bad Item Group
 
-	# Add Pagination # TODO: Add Sort By in Settings
+	# Add Pagination
 	items = frappe.db.sql(
-		query + " ORDER BY item.creation DESC, item.name DESC LIMIT %(start)s, %(limit)s;",
+		query + f" ORDER BY item.creation {sort}, item.name {sort} LIMIT %(start)s, %(limit)s;",
 		params,
 		as_dict=True,
 	)
