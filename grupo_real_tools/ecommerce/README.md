@@ -20,6 +20,11 @@ The files under `api/` define the public surface by primary ERPNext resource.
 Listing and detail return variant `attributes` keyed by the exact ERPNext attribute name. Each entry contains
 `value` and `abbr` from the configured list values. The storefront catalog uses non-numeric Item Attributes.
 
+`get_items` accepts an `attributes` JSON object such as `{"RAM - Capacidad":["8 GB","16 GB"],"Procesador":["Core i5"]}`.
+Values within one attribute are alternatives. Different attributes must match the same variant before pagination.
+For `Color`, the listing matches the item or template name only when the variant has no Color row.
+Pass comma-separated Item Group names in `item_group` to include those groups and their descendants.
+
 Only functions under `ecommerce/api` are whitelisted.
 
 ## Verification

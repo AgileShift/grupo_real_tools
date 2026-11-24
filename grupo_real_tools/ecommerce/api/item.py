@@ -131,26 +131,17 @@ def _get_descendant_item_groups(item_groups: list[str]) -> list[str]:
 @frappe.whitelist(allow_guest=True, methods=["GET"])
 @http_cache(public=True, max_age=300, stale_while_revalidate=900)
 @redis_cache(ttl=90, user=None, shared=False)
-def get_items(
-	sale: bool = False,
-	category: str = '',
-	size: str = '',
-	color: str = '',
-	start: int = 0,
-	limit: int = 19,
-	sort: str = 'desc',
-):
+def get_items(sale: bool = False, item_group: str = '', attributes: str = '', start: int = 0, limit: int = 19, sort: str = 'desc'):
 	"""
 	Get a list of available items, includes filtering by category and its descendants.
 
 	Parameters:
 		sale (bool): Fetches only items with discounts.
-		category (str): Fetches items from the specific category and its child categories.
-		size (str): Fetches items with a specific size.
-		color (str): Fetches items with a specific color.
+		item_group (str): Fetches items from the specified Item Groups and their descendants.
 		start (int): Pagination start index.
 		limit (int): Number of items to fetch.
 		sort (str): Sort direction by creation date: asc or desc.
+		attributes (str): JSON object mapping attribute names to selected values.
 
 	Returns:
 		List of items or a single item.
@@ -160,9 +151,8 @@ def get_items(
 	if sort not in {'asc', 'desc'}:
 		frappe.throw(_('Sort order must be ASC or DESC.'))
 
-	categories = _comma_separated_to_list(category)
-	sizes = _comma_separated_to_list(size)
-	colors = _comma_separated_to_list(color)
+	item_groups = _comma_separated_to_list(item_group)
+	attribute_filters = frappe.parse_json(attributes) if attributes else {}
 
 	warehouse = _get_catalog_warehouse()
 	if not warehouse:
@@ -171,41 +161,48 @@ def get_items(
 	query = _build_base_query()
 	params = {"start": start, "limit": limit, "warehouse": warehouse}
 
-	if sizes:
-		params["sizes"] = sizes
-		query += """
-			AND EXISTS (
+	for index, (attribute, values) in enumerate(attribute_filters.items()):
+		if not values:
+			continue
+
+		attribute_key = f"attribute_{index}"
+		values_key = f"attribute_values_{index}"
+		params[attribute_key] = attribute
+		params[values_key] = tuple(values)
+
+		match = f"""
+			EXISTS (
 				SELECT 1
-				FROM `tabItem Variant Attribute` iva_size
-				WHERE iva_size.parent = item.name
-					AND iva_size.attribute = 'Talla'
-					AND iva_size.attribute_value IN %(sizes)s
+				FROM `tabItem Variant Attribute` AS va
+				WHERE va.parent = item.name
+					AND va.attribute = %({attribute_key})s
+					AND va.attribute_value IN %({values_key})s
 			)
 		"""
 
-	if colors:
-		params["colors"] = colors
-		name_conditions = []
-		for index, color_name in enumerate(params["colors"]):
-			param_key = f"color_like_{index}"
-			params[param_key] = f"%{color_name.lower()}%"
-			name_conditions.append(
-				f"(LOWER(item.item_name) LIKE %({param_key})s OR LOWER(template.item_name) LIKE %({param_key})s)"
-			)
-
-		name_filter = " OR ".join(name_conditions) if name_conditions else "0 = 1"
-		query += f"""
-			AND (
-				EXISTS (
-					SELECT 1
-					FROM `tabItem Variant Attribute` iva_color
-					WHERE iva_color.parent = item.name
-						AND iva_color.attribute = 'Color'
-						AND iva_color.attribute_value IN %(colors)s
+		if attribute == "Color":
+			name_conditions = []
+			for color_index, color_name in enumerate(values):
+				key = f"color_like_{color_index}"
+				params[key] = f"%{color_name.lower()}%"
+				name_conditions.append(
+					f"(LOWER(item.item_name) LIKE %({key})s OR LOWER(template.item_name) LIKE %({key})s)"
 				)
-				OR {name_filter}
-			)
-		"""
+
+			name_filter = " OR ".join(name_conditions)
+			match += f"""
+				OR (
+					NOT EXISTS (
+						SELECT 1
+						FROM `tabItem Variant Attribute` AS va
+						WHERE va.parent = item.name
+							AND va.attribute = %({attribute_key})s
+					)
+					AND ({name_filter})
+				)
+			"""
+
+		query += f" AND ({match})"
 
 	if sale:
 		items_on_sale = frappe.db.sql("""
@@ -225,10 +222,10 @@ def get_items(
 		query += " AND item.item_code IN %(items_on_sale)s"
 		params["items_on_sale"] = items_on_sale
 
-	if categories:  # Filter by categories and their descendants
-		if descendant_categories := _get_descendant_item_groups(categories):
-			params["categories"] = descendant_categories
-			query += " AND item.item_group IN %(categories)s"
+	if item_groups:
+		if descendant_groups := _get_descendant_item_groups(item_groups):
+			params["item_groups"] = descendant_groups
+			query += " AND item.item_group IN %(item_groups)s"
 		else:
 			return []  # Bad Item Group
 
