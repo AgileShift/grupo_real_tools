@@ -17,6 +17,9 @@ GET /api/v2/method/grupo_real_tools.ecommerce.api.item_attribute.get_item_attrib
 Frappe API v2 returns method results under the `data` response property.
 The files under `api/` define the public surface by primary ERPNext resource.
 
+Listing and detail return variant `attributes` keyed by the exact ERPNext attribute name. Each entry contains
+`value` and `abbr` from the configured list values. The storefront catalog uses non-numeric Item Attributes.
+
 Only functions under `ecommerce/api` are whitelisted.
 
 ## Verification

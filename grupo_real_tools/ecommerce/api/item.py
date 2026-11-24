@@ -39,9 +39,14 @@ def _build_base_query():
 			template.item_name as template_item_name,
 			(bin.actual_qty - bin.reserved_stock) as actual_qty,
 			COALESCE(
-				(SELECT JSON_OBJECTAGG(item_attr.attribute, item_attr.attribute_value)
-				FROM `tabItem Variant Attribute` AS item_attr
-				WHERE item_attr.parent = item.item_code), JSON_OBJECT()
+				(
+					SELECT JSON_OBJECTAGG(va.attribute, JSON_OBJECT('value', va.attribute_value, 'abbr', av.abbr))
+					FROM `tabItem Variant Attribute` AS va
+					JOIN `tabItem Attribute Value` AS av
+						ON av.parent = va.attribute AND av.attribute_value = va.attribute_value
+					WHERE va.parent = item.name
+				),
+				JSON_OBJECT()
 			) as attributes
 		FROM `tabBin` AS bin
 		JOIN `tabItem` AS item ON item.item_code = bin.item_code
@@ -266,9 +271,14 @@ def get_items_from_template(item_code: str):
 			template.item_name as template_item_name,
 			(bin.actual_qty - bin.reserved_stock) as actual_qty,
 			COALESCE(
-				(SELECT JSON_OBJECTAGG(item_attr.attribute, item_attr.attribute_value)
-				FROM `tabItem Variant Attribute` AS item_attr
-				WHERE item_attr.parent = item.item_code), JSON_OBJECT()
+				(
+					SELECT JSON_OBJECTAGG(va.attribute, JSON_OBJECT('value', va.attribute_value, 'abbr', av.abbr))
+					FROM `tabItem Variant Attribute` AS va
+					JOIN `tabItem Attribute Value` AS av
+						ON av.parent = va.attribute AND av.attribute_value = va.attribute_value
+					WHERE va.parent = item.name
+				),
+				JSON_OBJECT()
 			) as attributes
 		FROM `tabBin` AS bin
 		JOIN `tabItem` AS item ON item.item_code = bin.item_code
