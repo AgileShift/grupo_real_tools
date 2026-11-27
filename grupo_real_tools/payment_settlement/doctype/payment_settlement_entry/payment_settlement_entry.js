@@ -21,8 +21,14 @@ frappe.ui.form.on("Payment Settlement Entry", {
 	},
 
 	// The 'Template' replaces accounts and components; reload references for those mappings.
-	company: (frm) => frm.set_value('template', ''),
-	template: (frm) => frm.call('fetch_template_data').then(() => frm.events.fetch_references(frm)),
+	company: (frm) => {
+		if (frm.doc.template) {
+			frm.set_value('template', '');
+		}
+	},
+	template: (frm) => {
+		frm.call('fetch_template_data').then(() => frm.events.fetch_references(frm))
+	},
 
 	from_date: (frm) => frm.events.fetch_references(frm),
 	to_date: (frm) => frm.events.fetch_references(frm),

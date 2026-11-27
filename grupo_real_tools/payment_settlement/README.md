@@ -311,6 +311,19 @@ The Settlement cannot be submitted while `difference` is non-zero.
 
 The user must select the real meaning of the difference; not every difference is rounding.
 
+#### Rounding when the clearing amounts match the ledger
+
+The settlement can balance in account currency and still differ by a cent in company currency. For example, at
+0.0273 USD per NIO, a clearing credit of C$100.00 is US$2.73. If three debit lines split that amount into
+C$20.00, C$20.00, and C$60.00, rounding each line separately gives US$0.55 + US$0.55 + US$1.64 = US$2.74.
+
+First confirm the clearing amounts in both currencies against the source General Ledger entries and the bank
+deposit and charges against the bank statement. If the only difference is line-level rounding, use
+`Make Difference Entry` → `Round Off` with the configured rounding account. Keep the clearing amounts and
+bank net unchanged. Do not repeat an exchange gain or loss already recorded on the source Payment Entry.
+After submission, check that the journal offsets the selected receipts in both currencies, not that the
+entire clearing account balance is zero. If the source amounts do not match the ledger, investigate before adjusting.
+
 ### Operational flow
 
 1. Create or select a `Payment Settlement Template`.
